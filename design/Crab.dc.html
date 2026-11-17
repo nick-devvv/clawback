@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clawdia and the tokens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;800&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F5EEE2}</style>
+</helmet>
+<div style="box-sizing: border-box; width: 100%; min-height: 100vh; padding: 26px 32px 12px; background: #F5EEE2; color: #22170F; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif">
+  <h1 style="margin: 0; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -0.035em">Clawdia.</h1>
+  <p style="margin: 4px 0 0; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -0.035em; color: #A6978A">the crab, and the rules she lives by.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 22px">
+    <sc-for list="{{sprites}}" as="s" hint-placeholder-count="5">
+      <figure style="margin: 0; padding: 14px 12px 12px; border-radius: 16px; background: #FFFAF2; box-shadow: inset 0 0 0 1px #E4D8C5; display: flex; flex-direction: column; align-items: center; gap: 10px">
+        <div style="height: 80px; display: flex; align-items: flex-end; justify-content: center">
+          <img src="{{s.src}}" alt="{{s.alt}}" width="{{s.w}}" height="{{s.h}}" style="image-rendering: pixelated">
+        </div>
+        <figcaption style="text-align: center"><div style="font-size: 13px; font-weight: 500">{{s.name}}</div><div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A; margin-top: 2px">{{s.use}}</div></figcaption>
+      </figure>
+    </sc-for>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 24px; margin-top: 22px">
+    <div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">color</div>
+      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px">
+        <sc-for list="{{swatches}}" as="c" hint-placeholder-count="12">
+          <div>
+            <div style="height: 26px; border-radius: 8px; background: {{c.hex}}; box-shadow: inset 0 0 0 1px rgba(34,23,15,.08)"></div>
+            <div style="font-size: 11px; margin-top: 4px">{{c.name}}</div>
+            <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #A6978A">{{c.hex}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">type</div>
+      <div style="margin-top: 10px; font-weight: 800; letter-spacing: -0.055em; font-size: 26px">Clawback</div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #A6978A">Geist 800, -0.055em, wordmark only</div>
+      <div style="margin-top: 12px; font-size: 26px; line-height: 1; font-weight: 500; letter-spacing: -0.035em">you're owed.</div>
+      <div style="font-size: 26px; line-height: 1; font-weight: 500; letter-spacing: -0.035em; color: #A6978A">the grey second line.</div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #A6978A; margin-top: 4px">Geist 500, one headline per screen</div>
+      <div style="margin-top: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px">99.9% · 43 min</div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #A6978A">Geist Mono for numbers and memory calls</div>
+    </div>
+    <div>
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">motion</div>
+      <sc-for list="{{motion}}" as="m" hint-placeholder-count="6">
+        <div style="display: grid; grid-template-columns: 64px 1fr; gap: 8px; padding: 7px 0; border-top: 1px solid #E4D8C5; font-size: 12px">
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: {{accent}}">{{m.k}}</span><span>{{m.v}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#FF6A1F","options":["#FF6A1F","#2F6FE0","#22170F"]},"$preview":{"width":880,"height":560}}'>
+/* Clawdia's sprite sheet (the same text grids the landing story uses) and the tokens every screen shares. */
+var CRAB = ['..kk............kk..', '.kook..........kook.', '.kooo..........oook.', '..kook........kook..', '...kok..k..k..kok...', '....kk..k..k..kk....', '.....kkkkkkkkkk.....', '..k.kooooooooook.k..', '.kokooooooooooookok.', '..kooooooooooooook..', '...kkkkkkkkkkkkkk...', '..k.k.k.....k.k.k...'];
+var SLEEP = CRAB.map(function (r, i) { return i === 4 ? '...kok........kok...' : i === 5 ? '....kk.kk..kk.kk....' : r; });
+var MINI = ['k........k', 'ko.k..k.ok', '.kkkkkkkk.', 'kooooooook', '.kkkkkkkk.', 'k.k....k.k'];
+var BOTTLE = ['..cc..', '..kk..', '.kwwk.', 'kwwwwk', 'kwrrwk', 'kwrrwk', 'kwrrwk', 'kwwwwk', '.kkkk.'];
+function svg(layers, w, h) {
+  var rects = '';
+  layers.forEach(function (L) { L.rows.forEach(function (row, j) { for (var i = 0; i < row.length; i++) { var col = L.map[row[i]]; if (col) rects += '<rect x="' + (L.x + i) + '" y="' + (L.y + j) + '" width="1" height="1" fill="' + col + '"/>'; } }); });
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" shape-rendering="crispEdges">' + rects + '</svg>');
+}
+class Component extends DCLogic {
+  renderVals() {
+    var acc = this.props.accent || '#FF6A1F', ink = '#22170F';
+    var crab = { k: ink, o: acc };
+    var sprites = [
+      { name: 'asleep', use: 'shore', alt: 'Clawdia asleep', src: svg([{ rows: SLEEP, x: 0, y: 0, map: crab }], 20, 12), w: 120, h: 72 },
+      { name: 'awake', use: 'logo, new agent', alt: 'Clawdia awake', src: svg([{ rows: CRAB, x: 0, y: 0, map: crab }], 20, 12), w: 120, h: 72 },
+      { name: 'molting', use: 'improve()', alt: 'Clawdia stepping out of her old shell', src: svg([{ rows: CRAB, x: 0, y: 5, map: { k: '#B9AB9D' } }, { rows: CRAB, x: 18, y: 0, map: crab }], 38, 17), w: 152, h: 68 },
+      { name: 'three agents', use: 'Auditor, Writer, Inbox', alt: 'Three small crabs', src: svg([{ rows: MINI, x: 0, y: 0, map: { k: ink, o: '#2F6FE0' } }, { rows: MINI, x: 12, y: 0, map: { k: ink, o: acc } }, { rows: MINI, x: 24, y: 0, map: { k: ink, o: '#B9AB9D' } }], 34, 6), w: 136, h: 24 },
+      { name: 'the claim', use: 'message in a bottle', alt: 'A bottle with the claim inside', src: svg([{ rows: BOTTLE, x: 0, y: 0, map: { k: ink, w: '#FFFAF2', r: acc, c: '#CDB894' } }], 6, 9), w: 48, h: 72 }
+    ];
+    return {
+      accent: acc,
+      sprites: sprites,
+      swatches: [
+        ['paper', '#F5EEE2'], ['sheet', '#FFFAF2'], ['ink', '#22170F'], ['muted', '#76665A'],
+        ['faint', '#A6978A'], ['line', '#E4D8C5'], ['claw', acc], ['broken', '#C4321F'],
+        ['sea', '#2F6FE0'], ['foam', '#A9C2F0'], ['sand', '#CDB894'], ['shell', '#F7B48C']
+      ].map(function (c) { return { name: c[0], hex: c[1] }; }),
+      motion: [
+        { k: '150ms', v: 'hover, small feedback' },
+        { k: '260ms', v: 'a step opens, a memory row lands' },
+        { k: '600ms', v: 'cards and receipts arrive' },
+        { k: '900ms', v: 'the one bold moment: the wave leaves coins' },
+        { k: 'scroll', v: 'is the walk down the beach' },
+        { k: 'still', v: 'reduced motion lands every chapter at once' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

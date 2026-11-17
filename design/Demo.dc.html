@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clawback · watch it</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;800&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes cbLand{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes cbRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes cbSlam{0%{opacity:0;transform:translateY(40px) rotate(-6deg) scale(.9)}60%{opacity:1;transform:translateY(-6px) rotate(1deg) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes cbFlood{from{clip-path:circle(0% at 50% 45%)}to{clip-path:circle(75% at 50% 45%)}}
+@keyframes cbFlip{0%{transform:scaleY(1)}50%{transform:scaleY(.05)}100%{transform:scaleY(1)}}
+@keyframes cbRipple{from{transform:scale(.4);opacity:.9}to{transform:scale(2.2);opacity:0}}
+@keyframes cbPulse{0%,100%{box-shadow:0 0 0 2px var(--acc),0 0 0 6px rgba(255,106,31,.18)}50%{box-shadow:0 0 0 2px var(--acc),0 0 0 10px rgba(255,106,31,.06)}}
+.cb-land{animation:cbLand 600ms cubic-bezier(.34,1.56,.64,1) both}
+.cb-rise{animation:cbRise 420ms cubic-bezier(.22,1,.36,1) both}
+.cb-slam{animation:cbSlam 900ms cubic-bezier(.34,1.56,.64,1) both}
+.cb-flood{animation:cbFlood 900ms cubic-bezier(.22,1,.36,1) both}
+.cb-flip{animation:cbFlip 300ms steps(4) both}
+.cb-btn{transition:transform 120ms cubic-bezier(.22,1,.36,1),background-color 150ms}
+.cb-btn:active{transform:scale(.94)}
+.cb-focus{transition:box-shadow 260ms cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion: reduce){.cb-land,.cb-rise,.cb-slam,.cb-flood,.cb-flip{animation:none}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; position: relative; overflow: hidden; background: {{c.bg}}; color: {{c.ink}}; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; --acc: #FF6A1F">
+
+  <header style="position: absolute; left: 32px; right: 32px; top: 20px; height: 40px; display: flex; align-items: center; justify-content: space-between">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <span style="font-weight: 800; letter-spacing: -0.055em; font-size: 18px">Clawback</span>
+      <span style="width: 1px; height: 18px; background: {{c.line}}"></span>
+      <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: {{c.muted}}">one real claim, start to finish</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="display: flex; gap: 4px" role="group" aria-label="Steps">
+        <sc-for list="{{dots}}" as="d" hint-placeholder-count="9">
+          <button type="button" onClick="{{d.go}}" aria-label="Jump to step {{d.n}}" style="all: unset; cursor: pointer; display: block; width: {{d.w}}px; height: 6px; border-radius: 3px; background: {{d.bg}}"></button>
+        </sc-for>
+      </div>
+      <button type="button" class="cb-btn" onClick="{{prev}}" aria-label="Previous step" style="all: unset; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{c.line}}; display: flex; align-items: center; justify-content: center; background: {{c.sheet}}">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path></svg>
+      </button>
+      <button type="button" class="cb-btn" onClick="{{toggle}}" aria-label="{{playLabel}}" style="all: unset; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: {{c.ink}}; color: {{c.bg}}">
+        <sc-if value="{{playing}}" hint-placeholder-val="{{ true }}">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 3v8M10 3v8" stroke="currentColor" stroke-width="2" fill="none"></path></svg>
+        </sc-if>
+        <sc-if value="{{paused}}" hint-placeholder-val="{{ false }}">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 2.5l8 4.5-8 4.5z" fill="currentColor"></path></svg>
+        </sc-if>
+      </button>
+      <button type="button" class="cb-btn" onClick="{{next}}" aria-label="Next step" style="all: unset; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{c.line}}; display: flex; align-items: center; justify-content: center; background: {{c.sheet}}">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path></svg>
+      </button>
+      <button type="button" class="cb-btn" onClick="{{restart}}" aria-label="Replay from the start" style="all: unset; cursor: pointer; width: 36px; height: 36px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{c.line}}; display: flex; align-items: center; justify-content: center; background: {{c.sheet}}">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7a4 4 0 1 0 1.2-2.9M3 2.5v2.6h2.6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- left: the apps you already use (contracts, a status page, mail) -->
+  <section class="cb-focus" style="position: absolute; left: 32px; top: 76px; width: 712px; height: 552px; background: {{c.sheet}}; border-radius: 18px; box-shadow: {{focus.left}}; overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 2px; padding: 12px 14px; border-bottom: 1px solid {{c.line}}; font-size: 13px">
+      <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+        <span style="padding: 6px 12px; border-radius: 999px; background: {{tb.bg}}; color: {{tb.color}}; font-weight: 500">{{tb.name}}</span>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{view.contracts}}" hint-placeholder-val="{{ true }}">
+      <div style="padding: 18px 22px; display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{contracts}}" as="ct" hint-placeholder-count="3">
+          <div class="cb-land" style="padding: 16px 18px; border-radius: 14px; box-shadow: inset 0 0 0 1px {{c.line}}; background: {{c.card}}; opacity: {{ct.o}}">
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 500"><span>{{ct.title}}</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #FF6A1F">{{ct.read}}</span></div>
+            <p style="margin: 8px 0 0; font-size: 14px; color: {{c.muted}}">… <mark style="background: {{ct.mark}}; color: {{c.ink}}; padding: 0 3px">{{ct.quote}}</mark> …</p>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{view.status}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 16px 22px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px">
+          <span style="font-size: 15px; font-weight: 500">githubstatus.com · incident history</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #E0563F">{{statusTotal}} min on Actions</span>
+        </div>
+        <sc-for list="{{incidents}}" as="i" hint-placeholder-count="6">
+          <div class="cb-land" style="display: grid; grid-template-columns: 70px minmax(0, 1fr) 62px 70px; gap: 10px; padding: 8px 0; border-bottom: 1px solid {{c.line}}; font-size: 13px">
+            <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: {{c.muted}}">{{i.date}}</span>
+            <span>{{i.name}}</span>
+            <span style="font-family: 'Geist Mono', ui-monospace, monospace; color: {{i.color}}">{{i.impact}}</span>
+            <span style="font-family: 'Geist Mono', ui-monospace, monospace; text-align: right">{{i.min}} min</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{view.mail}}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; grid-template-columns: 210px minmax(0, 1fr); height: 496px">
+        <div style="border-right: 1px solid {{c.line}}; padding: 10px 0">
+          <sc-for list="{{threads}}" as="th" hint-placeholder-count="3">
+            <div style="padding: 10px 14px; border-bottom: 1px solid {{c.line}}; background: {{th.bg}}">
+              <div style="font-size: 13px; font-weight: {{th.weight}}">{{th.from}}</div>
+              <div style="font-size: 12px; color: {{c.muted}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{th.subject}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding: 16px 20px; position: relative">
+          <sc-if value="{{mail.compose}}" hint-placeholder-val="{{ true }}">
+            <div style="border-radius: 14px; box-shadow: inset 0 0 0 1px {{c.line}}; background: {{c.card}}; padding: 14px 18px; transform: translateY({{mail.drop}}px); opacity: {{mail.fade}}; transition: transform 500ms cubic-bezier(.22,1,.36,1), opacity 500ms">
+              <div style="font-size: 12px; color: {{c.muted}}; font-family: 'Geist Mono', ui-monospace, monospace">to: GitHub Support · from: Claims Writer</div>
+              <div style="font-size: 15px; font-weight: 500; margin: 6px 0">Service credit request: Enterprise Cloud, Q4</div>
+              <p style="margin: 0; font-size: 13px; line-height: 1.5; white-space: pre-wrap; min-height: 250px">{{mail.typed}}<span style="display: inline-block; width: 7px; height: 15px; background: #FF6A1F; vertical-align: -2px; opacity: {{mail.caret}}"></span></p>
+              <div style="display: flex; justify-content: flex-end; margin-top: 8px"><span style="display: inline-flex; align-items: center; height: 36px; padding: 0 18px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 14px; transform: scale({{mail.sendScale}}); transition: transform 120ms">Send</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{mail.reply}}" hint-placeholder-val="{{ false }}">
+            <div class="cb-rise" style="border-radius: 14px; box-shadow: inset 0 0 0 1px {{c.line}}; padding: 14px 18px; background: {{c.card}}">
+              <div style="font-size: 12px; color: {{c.muted}}; font-family: 'Geist Mono', ui-monospace, monospace">GitHub Support · just now</div>
+              <div style="font-size: 15px; font-weight: 500; margin: 6px 0">Re: Service credit request</div>
+              <p style="margin: 0; font-size: 14px; line-height: 1.5">Our records show only <b>45 minutes</b> of qualifying downtime this quarter. Partial degradations don’t qualify.</p>
+              <p style="margin: 10px 0 0; font-size: 11px; color: {{c.faint}}">Sample reply written for the demo.</p>
+            </div>
+          </sc-if>
+          <sc-if value="{{mail.conflict}}" hint-placeholder-val="{{ false }}">
+            <div class="cb-land" style="margin-top: 14px; border-radius: 14px; box-shadow: inset 0 0 0 1.5px #E0563F; padding: 14px 18px; background: {{c.card}}">
+              <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #E0563F">conflict · found by Cognee</div>
+              <div style="font-size: 16px; font-weight: 500; margin: 6px 0 12px">How long was Actions down?</div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+                <div style="padding: 12px; border-radius: 12px; box-shadow: inset 0 0 0 {{mail.pickRing}} #FF6A1F; background: {{mail.pickBg}}"><div style="font-size: 12px; color: {{c.muted}}">their status page</div><div style="font-size: 22px; font-weight: 500">1,202 min</div></div>
+                <div style="padding: 12px; border-radius: 12px; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{mail.otherOpacity}}"><div style="font-size: 12px; color: {{c.muted}}">GitHub Support</div><div style="font-size: 22px; font-weight: 500; text-decoration: {{mail.strike}}">45 min</div></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{cursor.on}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; left: {{cursor.x}}px; top: {{cursor.y}}px; width: 18px; height: 18px; pointer-events: none">
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 2l12 5-5 2-2 5z" fill="{{c.ink}}" stroke="{{c.sheet}}" stroke-width="1"></path></svg>
+              <sc-if value="{{cursor.click}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: -10px; top: -10px; width: 28px; height: 28px; border-radius: 999px; box-shadow: 0 0 0 2px #FF6A1F; animation: cbRipple 500ms cubic-bezier(.22,1,.36,1) both"></span></sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+
+  <!-- right: what Clawback knows, in Cognee -->
+  <section style="position: absolute; left: 776px; top: 76px; width: 472px; height: 552px; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{drawers}}" as="dr" hint-placeholder-count="3">
+      <div class="cb-focus" style="background: {{c.sheet}}; border-radius: 16px; box-shadow: {{dr.ring}}; padding: 11px 14px">
+        <div style="display: flex; justify-content: space-between; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; margin-bottom: 4px"><span style="color: {{c.ink}}">{{dr.name}}</span><span style="color: {{dr.whoColor}}">{{dr.who}}</span></div>
+        <sc-for list="{{dr.rows}}" as="r" hint-placeholder-count="2">
+          <div class="cb-flip" style="display: flex; justify-content: space-between; gap: 10px; padding: 5px 8px; margin-top: 4px; border-radius: 6px; background: {{r.bg}}; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; text-decoration: {{r.strike}}; color: {{r.color}}">
+            <span>{{r.k}}</span><span>{{r.v}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div class="cb-focus" style="flex: 1; min-height: 0; background: {{c.tape}}; color: #F5EEE2; border-radius: 16px; padding: 11px 14px; overflow: hidden; box-shadow: {{focus.tape}}">
+      <div style="display: flex; justify-content: space-between; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #A6978A; margin-bottom: 6px"><span style="color: #F5EEE2">memory tape · every Cognee call</span><span>op · agent · what</span></div>
+      <sc-for list="{{tape}}" as="e" hint-placeholder-count="5">
+        <div class="cb-land" style="display: grid; grid-template-columns: 74px 104px minmax(0, 1fr); gap: 8px; padding: 3px 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px">
+          <span style="color: {{e.color}}">{{e.op}}</span><span style="color: #A6978A">{{e.agent}}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.what}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- the one bold moment -->
+  <sc-if value="{{slam}}" hint-placeholder-val="{{ false }}">
+    <div class="cb-flood" style="position: absolute; left: 0; right: 0; top: 0; height: 640px; background: #FF6A1F; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #22170F">
+      <div class="cb-slam" style="font-size: 200px; font-weight: 500; letter-spacing: -0.05em; line-height: 1">$630</div>
+      <div class="cb-slam" style="font-size: 26px; font-weight: 500; animation-delay: 180ms">owed by GitHub · 99.09% uptime against a 99.9% promise</div>
+    </div>
+  </sc-if>
+
+  <!-- captions: what is happening, in plain words, and exactly what Cognee does -->
+  <footer style="position: absolute; left: 32px; right: 32px; bottom: 22px; height: 134px; box-sizing: border-box; display: grid; grid-template-columns: 96px minmax(0, 1fr) 330px; gap: 22px; align-items: stretch; padding: 18px 22px; border-radius: 18px; background: {{c.capBg}}; color: {{c.capInk}}; z-index: 3">
+    <div style="display: flex; flex-direction: column; justify-content: space-between">
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: #FF6A1F">step {{stepNo}}</div>
+      <div style="font-size: 38px; font-weight: 500; letter-spacing: -0.04em; line-height: 1">{{stepBig}}<span style="font-size: 16px; color: {{c.capFaint}}">/9</span></div>
+      <div style="height: 3px; border-radius: 2px; background: {{c.capLine}}; overflow: hidden"><div style="height: 100%; width: {{stepProgress}}%; background: #FF6A1F"></div></div>
+    </div>
+    <div key="{{capKey}}" class="cb-rise" style="min-width: 0">
+      <div style="font-size: 21px; font-weight: 600; letter-spacing: -0.02em">{{beatTitle}}</div>
+      <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.45; color: {{c.capMuted}}">{{beatText}}</p>
+    </div>
+    <div key="{{capKey2}}" class="cb-rise" style="border-left: 1px solid {{c.capLine}}; padding-left: 20px; min-width: 0">
+      <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.capFaint}}">{{cogLabel}}</div>
+      <sc-for list="{{cogCalls}}" as="cc" hint-placeholder-count="2">
+        <div style="margin-top: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.35"><span style="color: #FF6A1F">{{cc.op}}</span> <span style="color: {{c.capMuted}}">{{cc.what}}</span></div>
+      </sc-for>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"speed":{"editor":"range","default":1,"min":0.5,"max":2,"step":0.25,"unit":"x"},"theme":{"editor":"select","default":"light","options":["light","dark"]},"$preview":{"width":1280,"height":800}}'>
+/* The self-playing demo (and the GIF). Nine steps of one real claim against GitHub. Each step has a caption bar
+   saying what is happening in plain words and exactly which Cognee calls it makes, and a ring shows where to look.
+   Step through it with the arrows, or let it play. It follows the site's light or dark mode. */
+var BEATS = [
+  { title: 'The Auditor reads your three SLAs', text: 'Clawback reads each vendor contract and saves the promise (99.9%, 99.95%, 100%) together with the exact clause it came from.', cog: [['remember()', '× 3, by the Auditor, into promises']], focus: ['left', 'promises'] },
+  { title: 'It checks GitHub’s own status page', text: 'It pulls every incident from githubstatus.com for this quarter and adds up the minutes on Actions, the service the SLA covers.', cogLabel: 'data, not memory', cog: [['GET', 'githubstatus.com public incident feed']], focus: ['left'] },
+  { title: 'GitHub broke the promise', text: '1,202 minutes down is 99.09% uptime, below the 99.9% promised. The SLA says that earns 10% of the quarter back: $630.', cogLabel: 'the rule, applied', cog: [['credit', '10% at or below 99.9%, 25% below 99%']], focus: [] },
+  { title: 'The Claims Writer sends the claim', text: 'Before writing, it asks the playbook what it has learned about GitHub. Then it writes the claim, links every incident, and sends it.', cog: [['recall()', 'lessons about GitHub, from the playbook'], ['remember()', 'the claim, into claims']], focus: ['left', 'tape'] },
+  { title: 'GitHub pushes back', text: 'Support replies that only 45 minutes count. Clawback saves the reply, and Cognee’s conflict review notices the two numbers disagree.', cog: [['remember()', 'their reply, into claims'], ['improve()', 'conflict review finds 1 conflict']], focus: ['left', 'claims'] },
+  { title: 'You pick the truth', text: 'You choose their own status page over the excuse. Clawback answers with every incident’s start and end time.', cog: [['resolve()', 'the conflict, with your reason']], focus: ['left'] },
+  { title: 'It gets better: improve()', text: 'The lesson (link every incident with its times) goes into the playbook, the session is distilled, and the claim-writer skill is rewritten to v2.', cog: [['remember()', 'the lesson, into playbook'], ['improve()', 'distil the session, skill v2']], focus: ['playbook', 'tape'] },
+  { title: 'Three agents, one memory, permissions', text: 'Auditor, Claims Writer and Inbox share one Cognee memory, but each reads only what it is allowed to. The inbox agent asks for the playbook and is refused.', cog: [['recall()', 'as Inbox Assistant: 403 denied']], focus: ['playbook', 'tape'] },
+  { title: 'Paid, forgotten, still remembered', text: 'When the $630 lands, forget() removes the claim so nobody asks twice. A brand-new agent starts from Cognee alone and already knows the promises, the payment and the lesson.', cog: [['forget()', 'the paid claim'], ['recall()', 'a new agent catches up']], focus: ['claims', 'tape'] }
+];
+var STEP_MS = 7200;
+var INC = [['Oct 05', 'Incident with Actions', 'critical', 217.7], ['Oct 07', 'Git Operations, Issues, Actions', 'critical', 47.7], ['Oct 19', 'Degraded Actions, Pages, Webhooks', 'critical', 67.5], ['Oct 21', 'Delays for PRs and webhooks', 'critical', 270.0], ['Oct 30', 'Actions, Pages and Webhooks', 'major', 92.8], ['Nov 04', 'PRs, Git Operations and Issues', 'major', 120.2], ['Nov 04', 'Incident with Actions and Pages', 'major', 55.7], ['Nov 04', 'Incident with Actions', 'major', 35.6], ['Nov 09', 'Incident with Webhooks and Actions', 'major', 110.0], ['Nov 09', 'Actions and Checks API', 'critical', 46.9], ['Nov 10', 'Git Operations and Pull Requests', 'critical', 104.2], ['Nov 11', 'Actions, Pages, Copilot', 'critical', 33.5]];
+var CLAIM = 'Hi GitHub team,\n\nYour SLA promises 99.9% uptime a quarter, or 10% back.\nYour status page shows 1,202 minutes of outage on Actions since Oct 1: 99.09% uptime.\n\n• Oct 05, 217.7 min  stspg.io/c11dc9nb1zdq\n• Oct 21, 270.0 min  stspg.io/gnnt0tx9nxmk\n• Nov 04, 120.2 min  stspg.io/18blsgwnbyy6\n• … 9 more, each linked\n\nThat is 10% of $6,300, so $630. Please credit our next invoice.\n\nThanks,\nAcme (example customer)';
+var THEME = {
+  light: { bg: '#F5EEE2', sheet: '#FFFAF2', card: '#FFFFFF', ink: '#22170F', muted: '#76665A', faint: '#A6978A', line: '#E4D8C5', hi: '#FFE3D2', redBg: '#FBE3DC', tape: '#22170F', capBg: '#22170F', capInk: '#F5EEE2', capMuted: '#CDBFB1', capFaint: '#8C7E72', capLine: '#3D3128' },
+  dark: { bg: '#14100D', sheet: '#1E1813', card: '#272019', ink: '#F5EEE2', muted: '#B5A595', faint: '#85786C', line: '#3A3029', hi: 'rgba(255,106,31,.22)', redBg: 'rgba(224,86,63,.22)', tape: '#0C0907', capBg: '#FFFAF2', capInk: '#22170F', capMuted: '#5E5046', capFaint: '#A6978A', capLine: '#E4D8C5' }
+};
+function tapeFor(b) {
+  var all = [
+    ['remember', 'auditor', 'GitHub SLA → promises', 0], ['remember', 'auditor', 'Twilio SLA → promises', 0], ['remember', 'auditor', 'Cloudflare SLA → promises', 0],
+    ['recall', 'claims-writer', 'lessons about GitHub? (playbook)', 3], ['remember', 'claims-writer', 'claim GitHub Q4 → claims', 3], ['entry', 'claims-writer', 'QA: how much does GitHub owe?', 3],
+    ['remember', 'claims-writer', 'GitHub reply → claims', 4], ['improve', 'claims-writer', 'conflict review on claims', 4], ['conflicts', 'claims-writer', '1 unresolved conflict', 4],
+    ['resolve', 'claims-writer', 'you chose: status page', 5],
+    ['remember', 'claims-writer', 'lesson → playbook', 6], ['entry', 'claims-writer', 'feedback +1 on the claim', 6], ['improve', 'claims-writer', 'distil session → skill v2', 6],
+    ['recall', 'inbox-assistant', 'denied: playbook', 7],
+    ['forget', 'claims-writer', 'claim GitHub Q4: paid', 8], ['recall', 'new agent', 'open claims + lessons', 8]
+  ];
+  return all.filter(function (e) { return e[3] <= b; }).reverse().slice(0, 9).map(function (e) { return { op: e[0], agent: e[1], what: e[2], color: e[2].indexOf('denied') === 0 ? '#FF8E73' : e[0] === 'recall' ? '#FF6A1F' : e[0] === 'improve' ? '#A9C2F0' : '#F5EEE2' }; });
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { beat: 0, t: 0, playing: true, theme: null };
+    this.tick = () => {
+      if (!this.state.playing) return;
+      var speed = this.props.speed || 1, t = this.state.t + 50 * speed, b = this.state.beat;
+      if (t >= STEP_MS) { b = (b + 1) % BEATS.length; t = 0; }
+      this.setState({ beat: b, t: t });
+    };
+    this.onTheme = (e) => { if (e && e.detail) this.setState({ theme: e.detail }); };
+  }
+  componentDidMount() {
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) this.setState({ t: STEP_MS - 1, playing: false });
+    try { var saved = window.localStorage.getItem('clawback-theme'); if (saved) this.setState({ theme: saved }); } catch (err) {}
+    window.addEventListener('clawback-theme', this.onTheme);
+    this.timer = setInterval(this.tick, 50);
+  }
+  componentWillUnmount() { clearInterval(this.timer); window.removeEventListener('clawback-theme', this.onTheme); }
+  renderVals() {
+    var b = this.state.beat, t = this.state.t, self = this, c = THEME[this.state.theme || this.props.theme || 'light'] || THEME.light, B = BEATS[b];
+    var shown = function (n, every, start) { return Math.max(0, Math.min(n, Math.floor((t - (start || 0)) / every) + 1)); };
+    var view = { contracts: b === 0, status: b === 1 || b === 2, mail: b >= 3 };
+    var nInc = b === 1 ? shown(12, 330, 300) : b > 1 ? 12 : 0;
+    var total = INC.slice(0, nInc).reduce(function (s, r) { return s + r[3]; }, 0);
+    var typedN = b === 3 ? Math.floor(Math.max(0, t - 300) / 2.6 / 2.2) : CLAIM.length;
+    var sendT = 5200, picked = (b === 5 && t > 2600) || b > 5;
+    var ring = function (on) { return on ? '0 0 0 2px #FF6A1F, 0 0 0 7px rgba(255,106,31,.16)' : 'inset 0 0 0 1px ' + c.line; };
+    var promisesRows = [['GitHub', '99.9% / quarter'], ['Twilio', '99.95% / month'], ['Cloudflare', '100%']].slice(0, b === 0 ? shown(3, 1100, 600) : 3)
+      .map(function (r, i) { var bad = b >= 1 && i === 0; return { k: r[0], v: bad ? '99.09% ✗' : r[1], bg: bad ? c.redBg : c.bg, color: c.ink, strike: 'none' }; });
+    var claimsRows = [];
+    if (b >= 2) claimsRows.push({ k: 'GitHub Q4 credit', v: b >= 8 ? 'paid ✓' : b >= 4 && b < 6 ? 'contested' : '$630', bg: b >= 8 ? c.bg : b === 4 || (b === 5 && !picked) ? c.redBg : c.hi, color: b >= 8 ? c.faint : c.ink, strike: b >= 8 && t > 2000 ? 'line-through' : 'none' });
+    if (b >= 8 && t > 2600) claimsRows.push({ k: 'settled', v: 'never claim twice', bg: c.bg, color: c.ink, strike: 'none' });
+    var v2 = b > 6 || (b === 6 && t > 2600);
+    var playRows = [{ k: 'skill', v: 'claim-writer v1', bg: c.bg, color: c.ink, strike: 'none' }];
+    if (b >= 6) playRows = [{ k: 'skill', v: v2 ? 'claim-writer v2 ↑' : 'claim-writer v1', bg: v2 ? c.hi : c.bg, color: c.ink, strike: 'none' }, { k: 'lesson · GitHub', v: 'link every incident', bg: c.hi, color: c.ink, strike: 'none' }];
+    var f = B.focus;
+    var drawers = [
+      { name: 'promises', who: 'Auditor writes · all read', whoColor: c.muted, rows: promisesRows, ring: ring(f.indexOf('promises') >= 0) },
+      { name: 'claims', who: 'Claims Writer · Inbox reads', whoColor: c.muted, rows: claimsRows.length ? claimsRows : [{ k: 'nothing yet', v: '', bg: 'transparent', color: c.faint, strike: 'none' }], ring: ring(f.indexOf('claims') >= 0) },
+      { name: 'playbook', who: b === 7 ? 'Inbox Assistant: denied' : 'Claims Writer only', whoColor: b === 7 ? '#E0563F' : c.muted, rows: playRows, ring: ring(f.indexOf('playbook') >= 0) }
+    ];
+    var threads = [
+      { from: 'GitHub Support', subject: 'Re: Service credit request', weight: b >= 4 ? 600 : 400, bg: b === 4 ? c.hi : 'transparent' },
+      { from: 'Claims Writer', subject: 'Service credit request: Q4', weight: 400, bg: b === 3 ? c.bg : 'transparent' },
+      { from: 'Twilio', subject: 'Your account review', weight: 400, bg: 'transparent' }
+    ].filter(function (th, i) { return i > 0 || b >= 4; });
+    var go = function (n) { self.setState({ beat: (n + BEATS.length) % BEATS.length, t: 0 }); };
+    return {
+      c: c,
+      beatTitle: B.title, beatText: B.text, cogLabel: B.cogLabel || 'what Cognee does', cogCalls: B.cog.map(function (x) { return { op: x[0], what: x[1] }; }),
+      capKey: 'cap' + b, capKey2: 'cog' + b, stepNo: (b + 1) + ' of 9', stepBig: '0' + (b + 1), stepProgress: Math.round(t / STEP_MS * 100),
+      playing: this.state.playing, paused: !this.state.playing, playLabel: this.state.playing ? 'Pause' : 'Play',
+      toggle: function () { self.setState({ playing: !self.state.playing }); },
+      restart: function () { self.setState({ beat: 0, t: 0, playing: true }); },
+      prev: function () { go(b - 1); }, next: function () { go(b + 1); },
+      focus: { left: ring(f.indexOf('left') >= 0), tape: f.indexOf('tape') >= 0 ? '0 0 0 2px #FF6A1F, 0 0 0 7px rgba(255,106,31,.16)' : 'none' },
+      dots: BEATS.map(function (x, i) { return { n: i + 1, w: i === b ? 28 : 10, bg: i < b ? c.ink : i === b ? '#FF6A1F' : c.line, go: function () { go(i); } }; }),
+      tabs: [{ name: 'Contracts', on: view.contracts }, { name: 'Status page', on: view.status }, { name: 'Inbox', on: view.mail }].map(function (x) { return { name: x.name, bg: x.on ? c.ink : 'transparent', color: x.on ? c.bg : c.muted }; }),
+      view: view,
+      contracts: [['GitHub Enterprise Service Level Agreement', 'a 99.9% quarterly uptime commitment'], ['Twilio APIs Service Level Agreement', 'Monthly API Availability Percentage Threshold: 99.95%'], ['Cloudflare Business Service Level Agreement', 'serve Customer Content 100% of the time']]
+        .map(function (ct, i) { var on = b > 0 || shown(3, 1100, 600) > i; return { title: ct[0], quote: ct[1], read: on ? 'remembered ✓' : '', mark: on ? c.hi : 'transparent', o: on ? 1 : 0.45 }; }),
+      incidents: INC.slice(0, nInc).reverse().slice(0, 9).map(function (r) { return { date: r[0], name: r[1], impact: r[2], min: r[3].toFixed(1), color: r[2] === 'critical' ? '#E0563F' : '#C08A1E' }; }),
+      statusTotal: Math.round(total).toLocaleString('en-US'),
+      threads: threads,
+      mail: {
+        compose: b === 3, reply: b >= 4, conflict: b === 5 || b === 6,
+        typed: CLAIM.slice(0, typedN), caret: b === 3 && t < sendT ? 1 : 0,
+        sendScale: b === 3 && t > sendT && t < sendT + 140 ? 0.92 : 1,
+        drop: b === 3 && t > sendT + 140 ? 40 : 0, fade: b === 3 && t > sendT + 140 ? 0 : 1,
+        pickRing: picked ? '2px' : '1px', pickBg: picked ? c.hi : c.card, otherOpacity: picked ? 0.45 : 1, strike: picked ? 'line-through' : 'none'
+      },
+      cursor: { on: b === 5, x: 60 + Math.min(1, t / 2200) * 90, y: 300 - Math.min(1, t / 2200) * 40, click: b === 5 && t > 2500 && t < 3000 },
+      drawers: drawers,
+      tape: tapeFor(b),
+      slam: b === 2
+    };
+  }
+}
+</script>
+</body>
+</html>

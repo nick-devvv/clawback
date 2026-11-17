@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clawback · you're owed</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;800&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5EEE2}
+.cb-cta{transition:transform 120ms cubic-bezier(.22,1,.36,1),background-color 150ms}
+.cb-cta:active{transform:scale(.96)}
+.cb-word{display:inline-block;transition:transform 900ms cubic-bezier(.22,1,.36,1),opacity 500ms cubic-bezier(.22,1,.36,1)}
+.cb-fade{transition:opacity 500ms cubic-bezier(.22,1,.36,1),transform 500ms cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion: reduce){.cb-word,.cb-fade{transition:none}}
+@media (max-width: 560px){.cb-cta{white-space:nowrap;padding:0 12px !important;font-size:13px !important}.cb-watch{display:none !important}}
+</style>
+</helmet>
+<div ref="{{setRoot}}" style="position: relative; height: 100vh; overflow: hidden; background: #F5EEE2; color: {{c.fg}}; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif">
+
+  <nav style="position: absolute; left: 0; right: 0; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; pointer-events: none">
+    <a href="#top" onClick="{{goTop}}" style="pointer-events: auto; display: flex; align-items: center; gap: 10px; text-decoration: none; color: {{c.fg}}">
+      <svg width="22" height="14" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 1h2v1H0zM1 0h1v1H1zM9 0h1v1H9zM9 1h2v1H9zM1 2h1v1H1zM9 2h1v1H9zM3 3h5v1H3zM2 4h7v2H2zM1 6h1v1H1zM3 6h1v1H3zM7 6h1v1H7zM9 6h1v1H9z" fill="#FF6A1F"></path><path d="M4 2h1v1H4zM6 2h1v1H6z" fill="currentColor"></path></svg>
+      <span style="font-weight: 800; letter-spacing: -0.055em; font-size: 20px">Clawback</span>
+    </a>
+    <div style="pointer-events: auto; display: flex; gap: 8px">
+      <button type="button" class="cb-cta" onClick="{{toggleTheme}}" aria-label="Switch to {{themeNext}} mode" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(166,151,138,.45); background: {{c.pill}}; color: {{c.pillInk}}; font-size: 14px; font-weight: 500"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 999px; background: {{c.dot}}; box-shadow: inset -3px -1px 0 {{c.dotCut}}"></span>{{themeNext}}</button>
+      <button type="button" class="cb-cta cb-watch" onClick="{{goDemo}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(166,151,138,.45); background: {{c.pill}}; color: {{c.pillInk}}; font-size: 14px; font-weight: 500">Watch it</button>
+      <a class="cb-cta" href="Live.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; background: {{accent}}; color: #22170F; text-decoration: none; font-size: 14px; font-weight: 600">Try it live</a>
+    </div>
+  </nav>
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 0; z-index: 6; height: 2px; width: {{progress}}%; background: {{accent}}"></div>
+
+  <div ref="{{setScroller}}" style="position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden">
+
+    <!-- the dive: one world from the sky to the reef; the thing in the middle falls with you and keeps changing -->
+    <section ref="{{setStory}}" onMouseMove="{{onMove}}" onMouseLeave="{{onLeave}}" onClick="{{onTap}}" style="position: relative; height: 1150vh">
+      <div ref="{{setStage}}" style="position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 1; background: #F5EEE2">
+        <canvas ref="{{setCanvas}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%"></canvas>
+
+        <div class="cb-fade" style="position: absolute; left: 64px; top: 20vh; width: min(380px, 27vw); opacity: {{late.o9}}; transform: translateY({{late.d9}}px); pointer-events: none">
+          <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: {{accent}}; margin-bottom: 8px">09 · recall</div>
+          <div style="font-size: clamp(30px, 3vw, 46px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em">kill the agent.</div>
+          <div style="margin-top: 6px; font-size: clamp(19px, 1.65vw, 24px); line-height: 1.25; color: {{c.fg2}}">a new one remembers everything.</div>
+          <span style="display: inline-block; margin-top: 12px; padding: 4px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{accent}}; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">recall()</span>
+        </div>
+
+        <div class="cb-fade" style="position: absolute; left: 0; right: 0; top: 24vh; text-align: center; opacity: {{late.oEnd}}; transform: translateY({{late.dEnd}}px); pointer-events: {{late.pe}}">
+          <h2 style="margin: 0; font-size: clamp(38px, 4.4vw, 66px); line-height: 1.02; font-weight: 500; letter-spacing: -0.035em">Clawback gets it back.</h2>
+          <p style="margin: 4px 0 0; font-size: clamp(38px, 4.4vw, 66px); line-height: 1.02; font-weight: 500; letter-spacing: -0.035em; color: {{c.fg2}}">you run the business.</p>
+          <div style="display: inline-flex; gap: 10px; margin-top: 28px">
+            <button type="button" class="cb-cta cb-watch" onClick="{{goDemo}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: #FFFAF2; color: #22170F; font-size: 15px; font-weight: 500">Watch it</button>
+            <a class="cb-cta" href="Live.dc.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{accent}}; color: #22170F; text-decoration: none; font-size: 15px; font-weight: 600">Try it live</a>
+          </div>
+        </div>
+        <p style="position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); margin: 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: {{c.fg2}}; opacity: {{hintOpacity}}">scroll down</p>
+      </div>
+
+      <div style="position: absolute; left: 0; right: 0; top: 13vh; z-index: 2; text-align: center; pointer-events: none">
+        <h1 style="margin: 0; font-size: clamp(42px, 5vw, 76px); line-height: 1.02; font-weight: 500; letter-spacing: -0.04em">
+          <sc-for list="{{hero1}}" as="w" hint-placeholder-count="5"><span style="display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin: 0 0.12em"><span class="cb-word" style="transform: translateY({{w.y}}); transition-delay: {{w.d}}ms">{{w.t}}</span></span></sc-for>
+        </h1>
+        <p style="margin: 2px 0 0; font-size: clamp(42px, 5vw, 76px); line-height: 1.02; font-weight: 500; letter-spacing: -0.04em; color: {{c.fg2}}">
+          <sc-for list="{{hero2}}" as="w" hint-placeholder-count="4"><span style="display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin: 0 0.12em"><span class="cb-word" style="transform: translateY({{w.y}}); transition-delay: {{w.d}}ms">{{w.t}}</span></span></sc-for>
+        </p>
+      </div>
+
+      <sc-for list="{{labels}}" as="lb" hint-placeholder-count="8">
+        <div class="cb-fade" style="position: absolute; left: {{lb.left}}; top: {{lb.top}}; width: {{lb.width}}; text-align: {{lb.align}}; z-index: 2; opacity: {{lb.o}}; transform: translateY({{lb.dy}}px); pointer-events: none">
+          <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: {{accent}}; margin-bottom: 8px">{{lb.kick}}</div>
+          <div style="font-size: clamp(30px, 3vw, 46px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em">{{lb.t1}}</div>
+          <div style="margin-top: 6px; font-size: clamp(19px, 1.65vw, 24px); line-height: 1.25; color: {{c.fg2}}">{{lb.t2}}</div>
+          <sc-if value="{{lb.hasSmall}}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 10px; font-size: 14px; line-height: 1.45; color: {{c.fg3}}">{{lb.small}}</div>
+          </sc-if>
+          <sc-if value="{{lb.hasTag}}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-block; margin-top: 12px; padding: 4px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{accent}}; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">{{lb.tag}}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <sc-for list="{{notes}}" as="nt" hint-placeholder-count="0">
+        <div class="cb-fade" style="position: absolute; left: {{nt.left}}; top: {{nt.top}}; width: 200px; text-align: {{nt.align}}; z-index: 2; opacity: {{nt.o}}; pointer-events: none">
+          <div style="font-size: 13px; font-weight: 500; color: {{c.fg}}">{{nt.t1}}</div>
+          <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: {{nt.color}}">{{nt.t2}}</div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section ref="{{setDemo}}" id="watch" style="position: relative; z-index: 2; background: {{c.page}}; color: {{c.pageInk}}; padding: 96px 32px 72px">
+      <div style="max-width: 1340px; margin: 0 auto">
+        <h2 style="margin: 0; font-size: clamp(36px, 4.2vw, 62px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em">watch it.</h2>
+        <p style="margin: 2px 0 36px; font-size: clamp(36px, 4.2vw, 62px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em; color: {{c.pageFaint}}">one real claim, start to finish.</p>
+        <div ref="{{setDemoBox}}" style="position: relative; width: 100%; height: {{demoHeight}}px; border-radius: 20px; overflow: hidden; box-shadow: inset 0 0 0 1px {{c.pageLine}}; background: {{c.page}}">
+          <div style="position: absolute; left: 0; top: 0; width: 1280px; height: 800px; transform: scale({{demoScale}}); transform-origin: 0 0">
+            <dc-import name="Demo" hint-size="1280px,800px"></dc-import>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="position: relative; z-index: 2; background: {{c.page}}; color: {{c.pageInk}}; padding: 72px 32px 120px">
+      <div style="max-width: 1340px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-end; justify-content: space-between">
+        <div style="flex: 999 1 560px; min-width: 0">
+          <h2 style="margin: 0; font-size: clamp(36px, 4.2vw, 62px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em">try it live.</h2>
+          <p style="margin: 2px 0 28px; font-size: clamp(36px, 4.2vw, 62px); line-height: 1.04; font-weight: 500; letter-spacing: -0.035em; color: {{c.pageFaint}}">real status pages, real memory.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 760px">
+            <div style="padding: 16px; border-radius: 16px; background: {{c.pageSheet}}; box-shadow: inset 0 0 0 1px {{c.pageLine}}"><div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #FF6A1F">improve()</div><div style="margin-top: 6px; font-size: 15px">Learns how each vendor argues.</div></div>
+            <div style="padding: 16px; border-radius: 16px; background: {{c.pageSheet}}; box-shadow: inset 0 0 0 1px {{c.pageLine}}"><div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #FF6A1F">3 agents, 1 memory</div><div style="margin-top: 6px; font-size: 15px">Auditor, Claims Writer, Inbox.</div></div>
+            <div style="padding: 16px; border-radius: 16px; background: {{c.pageSheet}}; box-shadow: inset 0 0 0 1px {{c.pageLine}}"><div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #FF6A1F">permissions</div><div style="margin-top: 6px; font-size: 15px">Inbox never sees the playbook.</div></div>
+          </div>
+        </div>
+        <a class="cb-cta" href="Live.dc.html" style="display: inline-flex; align-items: center; justify-content: center; height: 76px; padding: 0 36px; border-radius: 999px; background: {{accent}}; color: #22170F; text-decoration: none; font-size: 20px; font-weight: 600">Try it live</a>
+      </div>
+    </section>
+
+    <footer style="position: relative; z-index: 2; background: {{c.page}}; padding: 24px 32px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #A6978A">
+      <span>Agents After Dark · Founder Square · built with Cognee</span>
+      <span>Status data and SLA terms in the demo are real and linked. The vendor reply is a written sample.</span>
+    </footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#FF6A1F","options":["#FF6A1F","#2F6FE0","#E8A93A"]},"$preview":{"width":1440,"height":900}}'>
+/* Clawback landing: a dive from the sky to the reef, told by one set of pixels that falls with you.
+   The world scrolls up past it (dune, clouds, sand ledges, the sea surface, rocks, the reef) while the thing in the
+   middle keeps changing: an umbrella floats down like a parachute (the promise), lightning tears it (broken), it
+   crumples into a beach ball that bounces down sand ledges knocking coins loose (money back), splashes into the sea
+   and pops into a crab that sinks (Clawback asks), a wave's foam swirls it (pushback), the foam becomes a shark that
+   swims down an S-curve past the vendor's excuses (sharper), the shark bursts into a school circling a ring
+   (a team, one memory; one fish is kept off the chest), the fish gather into a bottle that dissolves into bubbles
+   and leaves a pearl (forget), the pearl sinks to the reef and a new crab digs out (it remembers).
+   The page gets darker the deeper you go. Scroll up and it all plays backwards. Pixel engine after LedgerLens. */
+var LABELS = [
+  { y: 1.3, side: 'l', kick: '01 \u00b7 the promise', t1: 'every vendor makes a promise.', t2: '99.9% uptime, or money back.', at: 1.05 },
+  { y: 2.12, side: 'r', kick: '02 \u00b7 the outage', t1: 'then they break it.', t2: 'a few minutes here, an hour there.', at: 1.9 },
+  { y: 3.12, side: 'l', kick: '03 \u00b7 the credit', t1: 'that’s money back.', t2: 'and almost nobody asks for it.', small: '99.9% uptime allows about 43 minutes of downtime a month. Past that, SLAs often credit 10 to 25% of the bill.', at: 2.85 },
+  { y: 4.36, side: 'r', kick: '04 \u00b7 the claim', t1: 'Clawback asks.', t2: 'it reads their own status page and sends the claim.', at: 4.1 },
+  { y: 5.16, side: 'l', kick: '05 \u00b7 the pushback', t1: 'they push back.', t2: 'it keeps the receipts and holds its ground.', at: 4.9 },
+  { y: 6.08, side: 'r', kick: '06 \u00b7 self-improvement', t1: 'every claim makes it sharper.', t2: 'it learns how each vendor argues.', tag: 'improve()', at: 5.85 },
+  { y: 7.38, side: 'l', kick: '07 \u00b7 shared memory', t1: 'a team of agents.', t2: 'one memory, and each sees only what it should.', tag: 'shared memory + permissions', at: 7.15 },
+  { y: 8.62, side: 'r', kick: '08 \u00b7 forgetting', t1: 'paid? it forgets the claim.', t2: 'so nobody asks twice.', tag: 'forget()', at: 8.4 }
+];
+var NOTES = [
+  { y: 2.4, fx: 0.5, dx: -440, t1: 'outage', t2: '47 min', at: 2.1, red: true, align: 'right' },
+  { y: 2.55, fx: 0.5, dx: -440, t1: 'outage', t2: '2 h 10 min', at: 2.28, red: true, align: 'right' },
+  { y: 6.47, fx: 0.12, dx: 105, t1: '“only 45 minutes”', t2: 'what they said', at: 6.2 },
+  { y: 6.92, fx: 0.88, dx: -315, t1: '“partial outages don’t count”', t2: 'what they said next', at: 6.65, align: 'right' },
+  { y: 7.56, fx: 0.8, dx: -100, t1: 'playbook', t2: 'inbox: denied', at: 7.35, red: true }
+];
+var INK = 1, SAND = 2, SAND2 = 3, SEA = 4, FOAM = 5, ACC = 6, PEACH = 7, RED = 8, WHITE = 9, DUST = 10, NAVY = 11, CLOUD = 12, DARK = 13, PINK = 14, GOLD = 15, PURP = 16, SLATE = 17, STEEL = 18, DEEPF = 19, KELP = 20, OUTL = 21, SHARKG = 22, ROCKL = 23, ROCKM = 24, ROCKD = 25;
+var HEX = ['', '#22170F', '#EADDC4', '#CDB894', '#2F6FE0', '#A9C2F0', '#FF6A1F', '#F7B48C', '#C4321F', '#FFFAF2', '#B9AB9D', '#1D3F8F', '#6E625A', '#8C7A62', '#E46A8E', '#E8A93A', '#7B6EE0', '#5B6B86', '#C6D0E2', '#4F79C4', '#2E8F7A', '#33405A', '#8794AD', '#6F7F9C', '#46557A', '#27324D'];
+var BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+var N = 3400, SURF_V = 4.1, BED_V = 10.96, CAM_END = 10.6;
+var CRAB = ['..kk............kk..', '.kook..........kook.', '.kooo..........oook.', '..kook........kook..', '...kok..k..k..kok...', '....kk..k..k..kk....', '.....kkkkkkkkkk.....', '..k.kooooooooook.k..', '.kokooooooooooookok.', '..kooooooooooooook..', '...kkkkkkkkkkkkkk...', '..k.k.k.....k.k.k...'];
+var SHARK = ['..........kk................', '.........kggk...............', '........kgggk...............', 'kk.....kggggk...............', 'kgk.kkkgggggkkkkkkkk........', 'kggkgggggggggggggggggkk.....', 'kggggggggggggggggggggggkk...', '.kgggggggggggggggggggggegkk.', '..kgggwwwwwwwwwwwwwwwwwwwwk.', '.kgkwwwwwwwwwwwwwwwwwwtwtwk.', 'kgk..kkwwwwwwwwwwwwwwwwwkk..', 'kk.....kkkkkkkkkkkkkkkkk....'];
+var FISH = ['..kkk....', '.kooook.k', 'koeoookkk', '.kooook.k', '..kkk....'].map(function (r) { return r.split('').reverse().join(''); });
+var BOTTLE = ['..cc..', '..kk..', '.kwwk.', 'kwwwwk', 'kwrrwk', 'kwrrwk', 'kwrrwk', 'kwwwwk', '.kkkk.'];
+var PALM_NUT = ['.kk.', 'kkkk', '.kk.'];
+var BUCKET = ['.k...k.', '..kkk..', 'kbbbbbk', '.bbbbb.', '.bbwbb.', '..bbb..'];
+var STAR = ['..o..', 'ooooo', '.ooo.', 'o...o'];
+var MINIF = ['..kk.k', '.kookk', '..kk.k'];
+var BOAT = ['......k.......', '.....kw.......', '....kww.......', '...kwww.......', '..kwwrw.......', '.kwwwww.......', '......k.......', 'hhhhhhhhhhhhhh', '.hhhhhhhhhhhh.', '..hhhhhhhhhh..'];
+var CHEST = ['.kkkkkkkkk.', 'kaaaaaaaaak', 'kkkkkyykkkk', 'kdddkyykddk', 'kdddddddddk', '.kkkkkkkkk.'];
+var COIN = ['.oo.', 'oooo', 'oowo', '.oo.'];
+
+function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+function smooth(t) { t = clamp(t); return t * t * (3 - 2 * t); }
+function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function back(t) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function hash(x, y) { var h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+function mix(a, b, t) { var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16), r = Math.round(lerp(pa >> 16, pb >> 16, t)), g = Math.round(lerp((pa >> 8) & 255, (pb >> 8) & 255, t)), bl = Math.round(lerp(pa & 255, pb & 255, t)); return '#' + ((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1); }
+
+/* ---------- formations, local cells around their own centre */
+function sprite(out, rows, x, y, s, map, extra) { for (var j = 0; j < rows.length; j++) for (var i = 0; i < rows[j].length; i++) { var c = rows[j][i], ink = map[c]; if (!ink) continue; for (var a = 0; a < s; a++) for (var b = 0; b < s; b++) { var p = { x: x + i * s + a, y: y + j * s + b, ink: ink, tag: 0 }; if (extra) extra(p, c); out.push(p); } } }
+function umbrella(open) {
+  var o = [], x, y;
+  if (!open) {
+    for (y = -64; y <= -26; y++) { var w = Math.round(6 * Math.sin(Math.PI * (y + 64) / 38)); for (x = -w; x <= w + 1; x++) o.push({ x: x, y: y, ink: x === -w || x === w + 1 ? INK : (x > 0 ? WHITE : ACC), tag: 1 }); }
+    for (y = -26; y <= 40; y++) { o.push({ x: 0, y: y, ink: INK, tag: 0 }); o.push({ x: 1, y: y, ink: INK, tag: 0 }); }
+  } else {
+    for (x = -46; x <= 46; x++) { var top = Math.round(-40 - 22 * Math.sqrt(1 - (x / 46) * (x / 46))), bot = -40 + Math.round(2 * Math.abs(Math.sin(x * Math.PI / 11.5))); for (y = top; y <= bot; y++) o.push({ x: x, y: y, ink: y <= top + 1 || y >= bot || Math.abs(x) >= 45 ? INK : (Math.floor((x + 46) / 11.5) % 2 ? WHITE : ACC), tag: 1 }); }
+    for (y = -64; y <= 40; y++) { if (y > -62 && y < -40) continue; o.push({ x: 0, y: y, ink: INK, tag: 0 }); o.push({ x: 1, y: y, ink: INK, tag: 0 }); }
+    for (x = 1; x <= 7; x++) o.push({ x: x, y: 40 + Math.round(Math.sin(x / 7 * Math.PI) * 3), ink: INK, tag: 0 });
+  }
+  return o;
+}
+function ball() { var o = [], cols = [ACC, WHITE, SEA, WHITE, PEACH, WHITE]; for (var y = -18; y <= 18; y++) for (var x = -18; x <= 18; x++) { var d = Math.hypot(x, y); if (d > 18) continue; o.push({ x: x, y: y, ink: d > 16.6 ? INK : d < 3.5 ? WHITE : cols[Math.floor(((Math.atan2(y, x) + Math.PI) / (Math.PI * 2)) * 6) % 6], tag: 0 }); } return o; }
+function crab() { var o = []; sprite(o, CRAB, -40, -24, 4, { k: INK, o: ACC }, function (p) { p.tag = p.y > 16 ? 2 : 0; }); return o; }
+function shark() { return topBody(132, 13, sharkPal, { pf0: 0.26, pf1: 0.46, pfw: 2.15, ct: 0.2, cw: 1.45, pelvic: true }); }
+function school() {
+  var o = [], pals = [koiPal(SEA, WHITE, NAVY), koiPal(ACC, WHITE, RED), koiPal(DUST, SLATE, SLATE)];
+  for (var f = 0; f < 9; f++) topBody(36, 4.6, pals[Math.floor(f / 3)], { pf0: 0.2, pf1: 0.34, pfw: 2.3, ct: 0.26, cw: 2.0 }).forEach(function (p) { o.push({ x: p.x + (f - 4) * 3, y: p.y, ink: p.ink, tag: f, lx: p.x, ly: p.y, s: p.s, r: p.tag }); });
+  return o;
+}
+function bottle() { var o = [], k = 0; sprite(o, BOTTLE, -9, -14, 3, { k: STEEL, w: FOAM, r: ACC, c: SAND2 }, function (p, ch) { if (ch === 'r') { p.tag = 7; p.k = k++; } }); return o; }
+/* seen from above: a body that tapers to a tail, swept-back pectoral fins, a crescent tail fin */
+function topBody(L, W, pal, o) {
+  var out = [], h = L / 2;
+  function wAt(s) { return s < 0.3 ? W * Math.sqrt(Math.max(0, s) / 0.3) * (0.62 + 0.38 * s / 0.3) : s < 0.86 ? W * (1 - Math.pow((s - 0.3) / 0.56, 1.25) * 0.84) : W * 0.16; }
+  function inTri(px, py, a, b, c) { var d1 = (px - b[0]) * (a[1] - b[1]) - (a[0] - b[0]) * (py - b[1]), d2 = (px - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (py - c[1]), d3 = (px - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (py - a[1]); return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)); }
+  var fA = [o.pf0, wAt(o.pf0) - 1], fT = [o.pf1, W * o.pfw], fB = [o.pf1 + 0.1, wAt(o.pf1 + 0.1) - 1];
+  var gA = [0.6, wAt(0.6) - 0.5], gT = [0.7, wAt(0.6) + W * 0.45], gB = [0.72, wAt(0.72) - 0.5];
+  for (var x = Math.round(-h - L * 0.16); x <= h; x++) for (var y = -Math.ceil(W * 3); y <= Math.ceil(W * 3); y++) {
+    var s = (h - x) / L, ay = Math.abs(y), w = wAt(s), region = 0, edge = false;
+    if (s >= 0 && s <= 1 && ay <= w) { region = 1; edge = ay > w - 1.1 || s < 0.02; }
+    else if (inTri(s, ay, fA, fT, fB)) { region = 2; edge = !inTri(s, ay - 1.2, fA, fT, fB); }
+    else if (o.pelvic && inTri(s, ay, gA, gT, gB)) region = 2;
+    else if (s > 0.9 && s < 0.9 + o.ct) { var lobe = (s - 0.9) / o.ct * W * o.cw, notch = s > 0.9 + o.ct * 0.45 ? (s - 0.9 - o.ct * 0.45) / (o.ct * 0.55) * W * o.cw * 0.75 : 0; if (ay <= lobe && ay >= notch) { region = 3; edge = ay > lobe - 1.1; } }
+    if (!region) continue;
+    out.push({ x: x, y: y, ink: pal(region, s, y, ay, w, edge, x), tag: region, s: s });
+  }
+  return out;
+}
+function sharkPal(region, s, y, ay, w, edge, x) {
+  if (edge) return OUTL;
+  if (region === 1) {
+    if (s > 0.05 && s < 0.1 && Math.abs(ay - (w - 2)) < 1) return INK;
+    if (s > 0.37 && s < 0.5 && ay < 1.8 * (1 - Math.abs(s - 0.43) / 0.07)) return OUTL;
+    if (s > 0.12 && s < 0.82 && ay < w - 2 && hash(x * 3, y * 7) < 0.07) return STEEL;
+    return ay < w * 0.38 ? SLATE : SHARKG;
+  }
+  return region === 3 ? SLATE : (ay < w + 3 ? SHARKG : SLATE);
+}
+function koiPal(c, c2, c3) {
+  return function (region, s, y, ay, w, edge, x) {
+    if (region === 1) { if (edge) return c3; if (s > 0.06 && s < 0.12 && Math.abs(ay - (w - 1.5)) < 1) return INK; return Math.sin(x * 0.55) + Math.cos(y * 0.9 + x * 0.25) > 0.75 ? c2 : c; }
+    return hash(x, y) < 0.45 ? c2 : (edge ? c3 : c);
+  };
+}
+function wag(px, py, L, amp, ph) {
+  var h = L / 2, s = (h - px) / L;
+  var Y = function (q) { return amp * q * q * Math.sin(Math.PI * 1.7 * q - ph); };
+  if (s <= 0.85) return [px, py + Y(Math.max(0, s))];
+  var xp = h - 0.85 * L, yp = Y(0.85), th = Math.atan2(Y(1) - yp, 0.15 * L) * 1.35, rx = px - xp, c = Math.cos(-th), sn = Math.sin(-th);
+  return [xp + rx * c - py * sn, yp + rx * sn + py * c];
+}
+function resample(pts) { var s = pts.slice().sort(function (p, q) { return (p.x - q.x) || (p.y - q.y); }), out = new Array(N); for (var i = 0; i < N; i++) out[i] = s[Math.floor(i * s.length / N)]; return out; }
+
+/* ---------- the timeline, in screens scrolled (uc = where the middle of the screen is, in screen heights) */
+var SEQ = [
+  { f: 0, a: 0.0, b: 0.8 }, { f: 1, a: 1.0, b: 2.6 }, { f: 2, a: 2.85, b: 4.0 }, { f: 3, a: 4.18, b: 5.55 },
+  { f: 4, a: 5.85, b: 7.05 }, { f: 5, a: 7.3, b: 8.25 }, { f: 6, a: 8.5, b: 10.45 }, { f: 7, a: 10.7, b: 99 }
+];
+var KIND = ['open', 'crumple', 'pop', 'crash', 'scatter', 'gather', 'emerge'];
+var IMP = [3.05, 3.32, 3.56, 3.78, 4.0], IMPX = [0.06, -0.04, 0.07, -0.02, 0.0], STRIKES = [2.12, 2.3, 2.47];
+function sharkPath(yv) { return 0.08 * Math.sin((yv - 5.85) * Math.PI * 1.6); }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { reveal: 0, noteMask: 0, progress: 0, hint: 1, late9: 0, lateEnd: 0, dark: false, vw: 1280, narrow: false, theme: null };
+    this.t0 = Date.now(); this.raf = 0; this.mouse = null; this.taps = []; this.bg = '';
+    this.F = [umbrella(false), umbrella(true), ball(), crab(), shark(), school(), bottle(), crab()].map(resample);
+    this.spin = new Float32Array(N); this.spin2 = new Float32Array(N); this.delay = new Float32Array(N);
+    for (var i = 0; i < N; i++) { this.spin[i] = hash(i, 11) - 0.5; this.spin2[i] = hash(i, 12) - 0.5; this.delay[i] = ((i * 37) % 101) / 101 * 0.22; }
+    this.A = {}; this.B = {};
+    this.setCanvas = (el) => { this.canvas = el; if (el) this.measure(); };
+    this.setScroller = (el) => { this.scroller = el; };
+    this.setStory = (el) => { this.story = el; };
+    this.setStage = (el) => { this.stage = el; };
+    this.setRoot = (el) => { this.root = el; };
+    this.setDemo = (el) => { this.demoEl = el; };
+    this.setDemoBox = (el) => { this.demoBox = el; if (el && el.clientWidth) this.setState({ vw: el.clientWidth }); };
+    var at = (e) => { var L = this.L, r = this.canvas && L ? this.canvas.getBoundingClientRect() : null; return r ? { x: (e.clientX - r.left) / L.cell - L.ox, y: (e.clientY - r.top) / L.cell } : null; };
+    this.onMove = (e) => { var q = at(e); if (q) this.mouse = { x: q.x, y: q.y, t: Date.now() }; };
+    this.onLeave = () => { this.mouse = null; };
+    this.onTap = (e) => { var q = at(e); if (q) { this.taps.push({ x: q.x, y: q.y, t: Date.now() }); if (this.taps.length > 6) this.taps.shift(); } };
+    this.onResize = () => { this.measure(); if (this.demoBox && this.demoBox.clientWidth) this.setState({ vw: this.demoBox.clientWidth }); };
+  }
+  componentDidMount() {
+    this.still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.addEventListener('resize', this.onResize);
+    try { var saved = window.localStorage.getItem('clawback-theme'); if (saved) { this.setState({ theme: saved }); this.night = saved === 'dark'; this.paint(); } } catch (err) {}
+    this.onTheme = (e) => { if (e && e.detail) { this.setState({ theme: e.detail }); this.night = e.detail === 'dark'; this.paint(); } };
+    window.addEventListener('clawback-theme', this.onTheme);
+    var loop = () => { this.raf = requestAnimationFrame(loop); if (!document.hidden) this.draw(); };
+    this.raf = requestAnimationFrame(loop);
+  }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); window.removeEventListener('resize', this.onResize); if (this.onTheme) window.removeEventListener('clawback-theme', this.onTheme); }
+  measure() {
+    var c = this.canvas; if (!c) return;
+    var w = c.clientWidth || 1440, h = c.clientHeight || 900, dpr = Math.min(2, window.devicePixelRatio || 1), cell = w < 700 ? 3 : 4, narrow = w < 700;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var L = { w: w, h: h, dpr: dpr, cell: cell, gw: Math.ceil(w / cell), gh: Math.ceil(h / cell) };
+    L.ox = Math.round(L.gw / 2); L.V = h / cell; L.rows = L.gh + 2; L.sc = Math.min(1, L.gw / 300);
+    this.L = L; this.pix = document.createElement('canvas'); this.pix.width = L.gw; this.pix.height = L.rows;
+    this.pctx = this.pix.getContext('2d'); this.img = this.pctx.createImageData(L.gw, L.rows); this.px32 = new Uint32Array(this.img.data.buffer);
+    this.grid = new Uint8Array(L.gw * L.rows);
+    this.paint();
+    if (this.state.narrow !== narrow) this.setState({ narrow: narrow });
+  }
+  paint() {
+    // the palette: by night the sand dims, clouds go slate, the sun becomes a moon
+    var hex = HEX.slice(); hex[ACC] = this.props.accent || '#FF6A1F';
+    if (this.night) { hex[SAND] = '#4A4237'; hex[SAND2] = '#7C6D58'; hex[DUST] = '#3C4762'; hex[PEACH] = '#F1E6CF'; hex[DARK] = '#8C8FA3'; hex[CLOUD] = '#2A3247'; hex[INK] = '#B3A898'; }
+    var bytes = new Uint8ClampedArray(4), word = new Uint32Array(bytes.buffer);
+    this.colors = hex.map(function (x) { if (!x) return 0; var v = parseInt(x.slice(1), 16); bytes[0] = (v >> 16) & 255; bytes[1] = (v >> 8) & 255; bytes[2] = v & 255; bytes[3] = 255; return word[0]; });
+  }
+  // where the falling thing is, and how it is posed, for formation f at camera position uc (screen offsets in grid cells)
+  pose(f, uc, time, gw, V, sc) {
+    var P = { x: 0, y: 0, rot: 0, s: sc };
+    if (f === 0) { P.y = (0.8 - uc) * V - 40 * sc; }
+    else if (f === 1) {
+      var t = uc - 1; P.x = 0.06 * gw * Math.sin(t * 3); P.y = (-0.06 + 0.02 * Math.sin(t * 5)) * V; P.rot = 0.12 * Math.cos(t * 3);
+      if (uc > 2.47) { P.rot += (uc - 2.47) * 7; P.y += (uc - 2.47) * 0.9 * V; }
+    } else if (f === 2) {
+      var k = 0; while (k < IMP.length - 1 && uc > IMP[k + 1]) k++;
+      if (uc < IMP[0]) { var t0 = clamp((uc - 2.85) / (IMP[0] - 2.85)); P.x = lerp(0, IMPX[0], t0) * gw; P.y = lerp(-0.05, 0.1, t0 * t0) * V; }
+      else { var a = IMP[k], b = IMP[Math.min(k + 1, IMP.length - 1)], tt = b > a ? clamp((uc - a) / (b - a)) : 1; P.x = lerp(IMPX[k], IMPX[Math.min(k + 1, IMPX.length - 1)], tt) * gw; P.y = (0.1 - 0.22 * 4 * tt * (1 - tt)) * V; }
+      P.rot = P.x / (18 * sc) * 0.9;
+    } else if (f === 3) {
+      P.y = lerp(0.1, -0.02, smooth((uc - 4.18) / 0.5)) * V; P.rot = Math.sin(time * 2) * 0.05;
+      if (uc > 5 && uc < 5.6) { var e = Math.sin(Math.PI * (uc - 5) / 0.6); P.rot += Math.sin((uc - 5) * 14) * 0.45 * e; P.y -= 0.08 * e * V; P.x = Math.sin((uc - 5) * 9) * 0.04 * gw * e; }
+    } else if (f === 4) {
+      var yv = uc; P.x = sharkPath(yv) * gw; var dx = (sharkPath(yv + 0.01) - sharkPath(yv)) * gw / (0.01 * V); P.rot = Math.atan2(1, dx); P.ph = uc * 18 + time * 2.4;
+    } else if (f === 5) { P.y = 0; }
+    else if (f === 6) { P.rot = Math.sin(time * 0.9) * 0.2 + (uc - 8.5) * 0.5; P.y = 0.39 * smooth((uc - 9.3) / 1.25) * V; }
+    else if (f === 7) { P.y = (BED_V - Math.min(uc, CAM_END)) * V - 24 * sc; }
+    return P;
+  }
+  // one particle of formation f in its pose; writes x, y (screen offsets in grid cells) and ink
+  place(f, p, P, uc, i, time, out) {
+    var lx = p.x, ly = p.y, ink = p.ink, s = P.s;
+    if (f === 0 || f === 1) {
+      if (p.tag === 1 && f === 1) { var n = 0; for (var k = 0; k < STRIKES.length; k++) if (uc > STRIKES[k]) n++; var hh = hash(i, 3); if (hh < n * 0.07) ink = 0; else if (hh < n * 0.16 && ink !== INK) ink = RED; }
+      if (ly < -30) lx += Math.sin(time * 1.4 + ly * 0.1) * 0.8;
+      ly += 40; var c = Math.cos(P.rot), sn = Math.sin(P.rot); var rx = lx * c - (ly - 0) * sn, ry = lx * sn + ly * c; lx = rx; ly = ry - 40;
+    } else if (f === 3) {
+      if (p.tag === 2) lx += Math.sin(time * 10 + lx * 0.3) * 1.2;
+      var c3 = Math.cos(P.rot), s3 = Math.sin(P.rot), x3 = lx * c3 - ly * s3; ly = lx * s3 + ly * c3; lx = x3;
+    } else if (f === 4) {
+      var wg = wag(lx, ly, 132, 10, P.ph || 0); lx = wg[0]; ly = wg[1];
+      if (p.tag === 2) ly += (ly > 0 ? 1 : -1) * Math.sin(time * 3 + (P.ph || 0) * 0.3) * 1.6 * clamp((Math.abs(p.y) - 12) / 22);
+      var c4 = Math.cos(P.rot), s4 = Math.sin(P.rot), x4 = lx * c4 - ly * s4; ly = lx * s4 + ly * c4; lx = x4;
+    } else if (f === 5) {
+      var th = (uc - 7.3) * Math.PI * 2 * 1.1 + time * 0.3 + p.tag * Math.PI * 2 / 9, R = 50 + (p.tag % 3) * 3;
+      if (p.tag >= 6) { var push = Math.max(0, Math.cos(th) - 0.82) * 140; R += push; }
+      var fx = Math.cos(th) * R, fy = Math.sin(th) * R * 0.72, head = Math.atan2(Math.cos(th) * 0.72, -Math.sin(th));
+      var wf = wag(p.lx, p.ly, 36, 4, uc * 22 + time * 3 + p.tag * 1.7), wl = wf[0], wly = wf[1], ch = Math.cos(head), sh = Math.sin(head);
+      lx = fx + wl * ch - wly * sh; ly = fy + wl * sh + wly * ch;
+      out.x = P.x + lx * s; out.y = P.y + ly * s; out.ink = ink; return;
+    } else if (f === 6) {
+      var D = smooth((uc - 8.85) / 0.35);
+      if (p.tag === 7) { var a6 = p.k * 2.4, r6 = Math.sqrt(p.k % 24) * 1.1; lx = lerp(lx, Math.cos(a6) * r6, D); ly = lerp(ly, Math.sin(a6) * r6, D); if (D > 0.5 && Math.cos(a6) < -0.3 && Math.sin(a6) < -0.3) ink = WHITE; }
+      else { var age = D * 1.6 - hash(i, 5) * 0.6; if (age > 0) { ly -= age * 70; lx += Math.sin(i) * age * 14; ink = age < 0.35 ? FOAM : age < 0.7 ? WHITE : 0; } }
+      var c6 = Math.cos(P.rot * (1 - D)), s6 = Math.sin(P.rot * (1 - D)), x6 = lx * c6 - ly * s6; ly = lx * s6 + ly * c6; lx = x6;
+    } else if (f === 2) {
+      var c2 = Math.cos(P.rot), s2 = Math.sin(P.rot), x2 = lx * c2 - ly * s2; ly = lx * s2 + ly * c2; lx = x2;
+    }
+    out.x = P.x + lx * s; out.y = P.y + ly * s; out.ink = ink;
+  }
+  draw() {
+    var L = this.L, scr = this.scroller, story = this.story; if (!L || !scr || !story || !this.canvas) return;
+    var S = scr.scrollTop, H = L.h; if (S > story.offsetHeight) return;
+    var time = this.still ? 0 : (Date.now() - this.t0) / 1000, now = Date.now(), gw = L.gw, rows = L.rows, ox = L.ox, sc = L.sc, V = L.V, grid = this.grid, self = this;
+    var uc = (S + H / 2) / H, cam = Math.min(uc, CAM_END), camTop = (cam - 0.5) * V, row0 = Math.floor(camTop), mid = cam * V;
+    grid.fill(0);
+    function put(x, Y, ink) { var gx = ox + Math.round(x), r = Math.round(Y) - row0; if (gx < 0 || gx >= gw || r < 0 || r >= rows) return; grid[r * gw + gx] = ink; }
+    function spr(rs, x, Y, s, map) { for (var j = 0; j < rs.length; j++) for (var i = 0; i < rs[j].length; i++) { var ink = map[rs[j][i]]; if (!ink) continue; for (var a = 0; a < s; a++) for (var b = 0; b < s; b++) put(x + i * s + a, Y + j * s + b, ink); } }
+    function oval(cx, cY, rx, ry, ink, dense) { for (var y = -ry; y <= ry; y++) for (var x = -rx; x <= rx; x++) { var d = Math.hypot(x / rx, y / ry); if (d > 1) continue; var gx = Math.round(cx + x), gy = Math.round(cY + y); if (BAYER[((gy & 3) << 2) | (gx & 3)] / 16 >= dense - d * 0.35) continue; put(gx, gy, typeof ink === 'function' ? ink(d, x, y, gx, gy) : ink); } }
+    function ring(cx, cY, rx, ry, ink, step) { var n = Math.max(16, Math.round((rx + ry) * 3)); for (var k = 0; k < n; k += step || 1) { var a = k / n * Math.PI * 2; put(cx + Math.cos(a) * rx, cY + Math.sin(a) * ry, ink); } }
+    function dots(x0, Y0, x1, Y1, ink, gap) { var n = Math.max(Math.abs(x1 - x0), Math.abs(Y1 - Y0)) | 0; for (var k = 0; k <= n; k += gap || 2) put(lerp(x0, x1, k / (n || 1)), lerp(Y0, Y1, k / (n || 1)), ink); }
+
+    // ---------- the page colour follows the depth: paper above the sea, blue, then deep navy
+    var night = !!this.night, sky = night ? '#131A2B' : '#F5EEE2', d = cam - SURF_V, bg = night ? (d < 0.3 ? sky : d < 1.5 ? mix(sky, '#10264A', (d - 0.3) / 1.2) : mix('#10264A', '#070D1A', clamp((d - 1.5) / 4))) : (d < 0.3 ? '#F5EEE2' : d < 0.9 ? mix('#F5EEE2', '#CFDDF2', (d - 0.3) / 0.6) : d < 3 ? mix('#CFDDF2', '#1E3F73', (d - 0.9) / 2.1) : mix('#1E3F73', '#0C1730', clamp((d - 3) / 3)));
+    var dark = d > 1.7 || night;
+    var canvasWater = 1 - smooth((d - 0.35) / 0.55), surfY = SURF_V * V;
+
+    // ---------- the world, top to bottom
+    // sky: sun and gulls
+    oval(0.36 * gw, 0.42 * V, 14 * sc, 14 * sc, PEACH, 1.2);
+    for (var g = 0; g < 4; g++) { var gx0 = ((time * 9 + g * 90) % (gw + 60)) - gw / 2 - 30, gY = (0.37 + g * 0.035) * V + Math.sin(time * 2 + g) * 2; put(gx0, gY, DARK); put(gx0 + 1, gY + 1, DARK); put(gx0 + 2, gY, DARK); put(gx0 - 1, gY - 1, DARK); put(gx0 + 3, gY - 1, DARK); }
+    // the dune the umbrella stands on, fading as you fall past it
+    var visTop = row0, visBot = row0 + rows;
+    for (var Y = Math.max(visTop, Math.round(0.78 * V)); Y < Math.min(visBot, Math.round(1.35 * V)); Y++) for (var x = -ox; x < gw - ox; x++) {
+      var top = 0.8 * V + (x / (gw / 2)) * (x / (gw / 2)) * 0.07 * V; if (Y < top) continue; var dep = (Y - top) / (0.32 * V), bay = BAYER[((Y & 3) << 2) | ((x + ox) & 3)] / 16;
+      if (Y - top < 1) put(x, Y, SAND2); else if (bay < 0.34 - dep * 0.4) put(x, Y, SAND); else if (hash(x, Y) < 0.05 * (1 - dep)) put(x, Y, SAND2);
+    }
+    // clouds to fall through, then the storm
+    [[-0.3, 1.5, 0], [0.33, 1.75, 1], [-0.22, 1.98, 2]].forEach(function (c) { oval(c[0] * gw, c[1] * V, 30 * sc, 9 * sc, DUST, 0.5); oval(c[0] * gw + 16 * sc, c[1] * V - 6 * sc, 16 * sc, 7 * sc, DUST, 0.5); });
+    if (uc > 1.6 && uc < 2.9) {
+      [[-0.2, 1.98], [0.05, 1.94], [0.28, 2.0]].forEach(function (c) { oval(c[0] * gw, c[1] * V, 46 * sc, 13 * sc, function (dd) { return dd < 0.5 ? CLOUD : DARK; }, 0.7); });
+      STRIKES.forEach(function (s, k) { if (Math.abs(uc - s) < 0.03) { var P1 = self.pose(1, uc, time, gw, V, sc), bx = (k - 1) * 0.15 * gw, bY = 2.0 * V, tx = P1.x, tY = mid + P1.y - 50 * sc; for (var z = 0; z < 10; z++) { var nx = lerp(bx, tx, (z + 1) / 10) + (z % 2 ? 6 : -6) * sc, nY = lerp(bY, tY, (z + 1) / 10); dots(bx, bY, nx, nY, ACC, 1); dots(bx + 1, bY, nx + 1, nY, ACC, 1); bx = nx; bY = nY; } } });
+    }
+    // sand ledges the ball bounces down, with the coins it knocks loose
+    for (var li = 0; li < 4; li++) {
+      var lY = IMP[li] * V + 0.1 * V + 18 * sc, lx = IMPX[li] * gw, lw = 44 * sc;
+      if (lY < visTop - 20 || lY > visBot + 20) continue;
+      for (var yy = 0; yy < 14 * sc; yy++) for (var xx = -lw; xx <= lw; xx++) { var edge = Math.abs(xx) / lw; if (edge > 1 - yy / (30 * sc)) continue; var bb = BAYER[(((lY + yy) & 3) << 2) | ((xx + ox) & 3)] / 16; put(lx + xx, lY + yy, yy < 2 ? SAND2 : bb < 0.75 - yy * 0.04 ? SAND : (bb < 0.85 ? DARK : 0)); }
+      if (uc > IMP[li]) for (var cn = 0; cn < 2; cn++) { var dt = clamp((uc - IMP[li]) / 0.08), side = cn ? 1 : -1; spr(COIN, lx + side * (10 + 16 * dt) * sc - 4, lY - 8 - 36 * 4 * dt * (1 - dt) * sc, 2, { o: ACC, w: hash(li * 2 + cn, Math.floor(time * 2)) < 0.3 ? WHITE : ACC }); }
+    }
+    // the sea: a surface you fall through, water that thickens, then the page itself turns blue
+    if (surfY > visTop - 60) {
+      for (var Y2 = Math.max(visTop, Math.round(surfY - 4)); Y2 < visBot; Y2++) for (var x2 = -ox; x2 < gw - ox; x2++) {
+        var sY = surfY + Math.sin(time * 1.4 + x2 * 0.08) * 1.4; if (Y2 < sY) continue; var dw = (Y2 - sY) / V, b2 = BAYER[((Y2 & 3) << 2) | ((x2 + ox) & 3)] / 16;
+        if (Y2 - sY < 1.2) { put(x2, Y2, WHITE); continue; }
+        if (canvasWater > 0 && Y2 % 3 === 0) { var seg = Math.floor((x2 + time * 10 * (Y2 % 2 ? 1 : -1)) / 7); if (hash(seg, Y2) < (0.18 + dw * 0.45) * canvasWater) put(x2, Y2, hash(seg, Y2 + 1) < 0.3 ? SEA : FOAM); }
+      }
+      // the wave rolling over the top as you go under
+      if (uc > 3.65 && uc < 4.7) { var wx = lerp(0.62, -0.12, smooth((uc - 3.7) / 0.7)) * gw, wsc = 1.25 * sc; for (var wy = -22; wy <= 0; wy++) for (var wxx = -50; wxx <= 50; wxx++) { var dd2 = Math.hypot(wxx / 50, (wy + 2) / 22); if (dd2 > 1 || wy > 0) continue; if (Math.hypot((wxx + 20) / 30, (wy + 4) / 14) < 1) continue; put(wx + wxx * wsc, surfY + wy * wsc, dd2 > 0.82 ? WHITE : ((wxx + wy) & 3 ? SEA : FOAM)); } }
+      // splash: drops and rings where the ball hits
+      if (uc > 3.98 && uc < 4.7) { var sp = uc - 4.0; for (var dr = 0; dr < 36; dr++) { var t3 = sp * 5; if (t3 > 1.2 || t3 < 0) break; var ang = -Math.PI * (0.15 + 0.7 * hash(dr, 2)), vel = (30 + 50 * hash(dr, 3)) * sc; put(Math.cos(ang) * vel * t3, surfY + Math.sin(ang) * vel * t3 + 60 * t3 * t3 * sc, dr % 3 ? WHITE : FOAM); } for (var rg = 0; rg < 3; rg++) { var rr = (sp - rg * 0.06) * 1.2 * V; if (rr > 4 && rr < 0.7 * gw) ring(0, surfY, rr, rr * 0.18, WHITE, 2); } }
+    }
+    // under water: drifting specks, light, bubbles
+    for (var Y3 = Math.max(visTop, Math.round(surfY + 2)); Y3 < visBot; Y3 += 1) { var hy = hash(Y3, 77); if (hy < 0.35) { var sx = Math.round((hash(Y3, 78) - 0.5) * gw), drift = Math.sin(time * 0.6 + Y3) * 2; put(sx + drift, Y3, d > 1.5 ? DEEPF : FOAM); } }
+    if (uc > 4.0) for (var bu = 0; bu < 14; bu++) { var bxx = (hash(bu, 3) - 0.5) * gw * 0.9, byy = mid + 0.5 * V - ((time * 12 + hash(bu, 4) * V) % V); ring(bxx, byy, 1 + (bu % 2), 1 + (bu % 2), d > 1.5 ? DEEPF : WHITE); }
+    // the shark's path and the vendor's excuses on the rocks
+    if (uc > 5.2 && uc < 7.8) {
+      for (var Yp = Math.max(visTop, Math.round(5.85 * V)); Yp < Math.min(visBot, Math.round(7.1 * V)); Yp += 3) put(sharkPath(Yp / V) * gw, Yp, DEEPF);
+      [[-0.38, 6.5], [0.38, 6.95]].forEach(function (rk) { oval(rk[0] * gw, rk[1] * V, 24 * sc, 16 * sc, function (dd, x, y) { return x + y < -10 ? ROCKL : x + y < 8 ? ROCKM : ROCKD; }, 1.2); });
+    }
+    // the chest the inbox fish is kept away from
+    if (uc > 6.9 && uc < 8.6) {
+      var chx = 0.3 * gw, chY = 7.78 * V; oval(chx, chY + 14 * sc, 30 * sc, 10 * sc, function (dd, x, y) { return x + y < -6 ? ROCKL : x + y < 6 ? ROCKM : ROCKD; }, 1.2); spr(CHEST, chx - 16 * sc, chY - 6 * sc, Math.max(1, Math.round(3 * sc)), { k: INK, a: CLOUD, y: GOLD, d: DARK });
+      for (var cs = 0; cs < 5; cs++) if (hash(cs, Math.floor(time * 3)) < 0.5) put(chx + (hash(cs, 5) - 0.5) * 36 * sc, chY - 10 * sc - hash(cs, 6) * 12 * sc, GOLD);
+      if (uc > 7.3 && uc < 8.25) { for (var f5 = 6; f5 < 9; f5++) { var th5 = (uc - 7.3) * Math.PI * 2 * 1.1 + time * 0.3 + f5 * Math.PI * 2 / 9; if (Math.cos(th5) > 0.97) { for (var xr = -3; xr <= 3; xr++) { put(chx - 26 * sc + xr, chY - 20 * sc + xr, RED); put(chx - 26 * sc + xr, chY - 20 * sc - xr, RED); put(chx - 25 * sc + xr, chY - 20 * sc + xr, RED); put(chx - 25 * sc + xr, chY - 20 * sc - xr, RED); } } } }
+    }
+    // the reef at the bottom: sand, corals, kelp
+    var bedY = BED_V * V;
+    if (bedY - 0.8 * V < visBot) {
+      for (var Y4 = Math.max(visTop, Math.round(bedY)); Y4 < visBot; Y4++) for (var x4 = -ox; x4 < gw - ox; x4++) { var top4 = bedY + Math.sin(x4 * 0.05) * 3; if (Y4 < top4) continue; var b4 = BAYER[((Y4 & 3) << 2) | ((x4 + ox) & 3)] / 16; put(x4, Y4, Y4 - top4 < 1 ? SAND2 : b4 < 0.45 ? SAND2 : (b4 < 0.7 ? DARK : 0)); }
+      var CORAL = [[-0.44, 0.0, PINK, 26], [-0.36, -0.08, GOLD, 18], [-0.47, -0.17, PURP, 22], [-0.3, 0.02, SEA, 14], [0.42, 0.0, PURP, 28], [0.35, -0.1, PINK, 18], [0.47, -0.2, GOLD, 22], [0.3, 0.01, ACC, 14], [-0.16, 0.02, PEACH, 10], [0.18, 0.02, PINK, 9]];
+      CORAL.forEach(function (c, k) { var cx = c[0] * gw, cY = bedY + c[1] * V, r = c[3] * sc; for (var bl = 0; bl < 5; bl++) { var ax = cx + (hash(k, bl) - 0.5) * r * 1.6, aY = cY - hash(k, bl + 9) * r * 0.9, ar = r * (0.45 + hash(k, bl + 3) * 0.35); oval(ax, aY, ar, ar, function (dd, x, y, gx, gy) { return dd > 0.75 && hash(gx, gy) < 0.5 ? (c[2] === GOLD ? PEACH : WHITE) : c[2]; }, 0.95); } });
+      for (var kp = 0; kp < 9; kp++) { var kx = (hash(kp, 21) - 0.5) * gw * 0.9, kh = (30 + hash(kp, 22) * 40) * sc; if (Math.abs(kx) < 0.12 * gw) continue; for (var ky = 0; ky < kh; ky++) put(kx + Math.sin(time * 1.2 + ky * 0.12 + kp) * (ky / kh) * 6 * sc, bedY - ky, KELP); }
+    }
+
+    // ---------- details that fill the world, top to bottom
+    var night = !!this.night;
+    if (night && visTop < 2.2 * V) { for (var st = 0; st < 140; st++) { var stx = (hash(st, 41) - 0.5) * gw, stY = hash(st, 42) * 2.1 * V; if (stY < visTop || stY > visBot) continue; if (hash(st, Math.floor(time * 1.5 + st)) < 0.85) put(stx, stY, hash(st, 43) < 0.2 ? PEACH : WHITE); } put(0.36 * gw - 4 * sc, 0.42 * V - 3 * sc, DUST); put(0.36 * gw + 3 * sc, 0.42 * V + 2 * sc, DUST); put(0.36 * gw + 5 * sc, 0.42 * V - 5 * sc, DUST); }
+    if (visTop < 1.4 * V) {
+      // a palm on the dune, a towel, a bucket and spade, a starfish
+      var pbx = -0.36 * gw, pbY = 0.8 * V + (pbx / (gw / 2)) * (pbx / (gw / 2)) * 0.07 * V, ph = 0.3 * V;
+      for (var pk = 0; pk <= 70; pk++) { var pt = pk / 70, ppx = pbx + pt * pt * 22 * sc, ppY = pbY - pt * ph; put(ppx, ppY, pk % 6 < 2 ? DARK : SAND2); put(ppx + 1, ppY, pk % 6 < 2 ? DARK : SAND2); put(ppx + 2, ppY, DARK); }
+      var tpx = pbx + 22 * sc, tpY = pbY - ph;
+      for (var fr = 0; fr < 7; fr++) { var fa = -Math.PI + fr * (Math.PI / 6) + Math.sin(time * 1.3 + fr) * 0.05; for (var rr2 = 0; rr2 < 42 * sc; rr2++) { var fx = tpx + Math.cos(fa) * rr2, fY = tpY + Math.sin(fa) * rr2 * 0.55 + rr2 * rr2 / (70 * sc); put(fx, fY, KELP); if (rr2 % 3 === 0 && rr2 > 6) { put(fx, fY + 2, KELP); put(fx + 1, fY + 3, KELP); } } }
+      spr(PALM_NUT, tpx - 4, tpY + 1, Math.max(1, Math.round(2 * sc)), { k: DARK }); spr(PALM_NUT, tpx + 3, tpY + 3, Math.max(1, Math.round(2 * sc)), { k: DARK });
+      var twx = 0.13 * gw, twY = 0.8 * V + (twx / (gw / 2)) * (twx / (gw / 2)) * 0.07 * V; for (var tx2 = 0; tx2 < 46 * sc; tx2++) for (var ty2 = 0; ty2 < 4; ty2++) put(twx + tx2, twY - 1 - ty2 * 0.5, Math.floor(tx2 / (6 * sc)) % 2 ? WHITE : SEA);
+      var bkx = 0.26 * gw, bkY = 0.8 * V + (bkx / (gw / 2)) * (bkx / (gw / 2)) * 0.07 * V; spr(BUCKET, bkx, bkY - 12 * sc, Math.max(1, Math.round(2 * sc)), { k: INK, b: ACC, w: WHITE }); for (var sp2 = 0; sp2 < 18 * sc; sp2++) put(bkx + 20 * sc + sp2 * 0.3, bkY - sp2, INK); oval(bkx + 25 * sc, bkY - 18 * sc, 3 * sc, 4 * sc, SEA, 1.2);
+      spr(STAR, -0.16 * gw, 0.83 * V, Math.max(1, Math.round(2 * sc)), { o: PEACH }); spr(STAR, 0.05 * gw, 0.86 * V, Math.max(1, Math.round(2 * sc)), { o: ACC });
+    }
+    if (uc > 0.9 && uc < 2.6) {
+      // kites on the wind
+      [[0.31, 1.45, ACC, SEA], [-0.31, 1.82, SEA, GOLD]].forEach(function (kt, k) {
+        var kx = kt[0] * gw + Math.sin(time * 0.8 + k) * 6 * sc, kY = kt[1] * V + Math.cos(time * 0.9 + k) * 4 * sc, r = 10 * sc;
+        for (var yy3 = -r * 1.3; yy3 <= r * 1.3; yy3++) for (var xx3 = -r; xx3 <= r; xx3++) { if (Math.abs(xx3) / r + Math.abs(yy3) / (r * 1.3) > 1) continue; put(kx + xx3, kY + yy3, (xx3 < 0) === (yy3 < 0) ? kt[2] : kt[3]); }
+        dots(kx - r, kY, kx + r, kY, INK, 1); dots(kx, kY - r * 1.3, kx, kY + r * 1.3, INK, 1);
+        for (var tl = 0; tl < 40; tl++) put(kx + Math.sin(time * 4 + tl * 0.35) * 4 * sc, kY + r * 1.3 + tl * sc, tl % 8 < 2 ? kt[2] : DARK);
+        dots(kx, kY + r * 0.6, kx - (k ? -1 : 1) * 0.5 * gw, kY + 0.4 * V, DUST, 4);
+      });
+    }
+    if (uc > 1.85 && uc < 2.9) for (var wd = 0; wd < 30; wd++) { var wdx = ((time * 160 + hash(wd, 1) * 600) % 600) - 300, wdY = (1.95 + hash(wd, 2) * 0.8) * V; for (var k5 = 0; k5 < 10; k5++) put(wdx * sc + k5, wdY, DUST); }
+    if (visTop < 4.2 * V && visBot > 2.8 * V) {
+      // a lighthouse on the right, a sandy cliff on the left
+      var lhx = 0.4 * gw, lhBase = 4.05 * V, lhH = 0.95 * V;
+      for (var lY2 = 0; lY2 < lhH; lY2++) { var lt = lY2 / lhH, half = lerp(11, 7, lt) * sc, Yl = lhBase - lY2; if (Yl < visTop || Yl > visBot) continue; for (var lx2 = -half; lx2 <= half; lx2++) put(lhx + lx2, Yl, Math.abs(lx2) > half - 1 ? INK : Math.floor(lY2 / (22 * sc)) % 2 ? WHITE : RED); }
+      var lanY = lhBase - lhH; oval(lhx, lanY - 6 * sc, 8 * sc, 6 * sc, GOLD, 1.3); for (var lx3 = -10 * sc; lx3 <= 10 * sc; lx3++) put(lhx + lx3, lanY - 13 * sc, INK);
+      var beam = Math.PI + Math.sin(time * 0.7) * 0.45; for (var br = 10; br < 0.36 * gw; br += 2) for (var bw = -br * 0.07; bw <= br * 0.07; bw += 2) { if (hash(br, bw | 0) > 0.5 - br / gw * 0.6) continue; put(lhx + Math.cos(beam) * br - Math.sin(beam) * bw, lanY - 6 * sc + Math.sin(beam) * br + Math.cos(beam) * bw, night ? GOLD : PEACH); }
+      oval(lhx, lhBase + 4 * sc, 30 * sc, 10 * sc, function (dd, x, y) { return x + y < -6 ? ROCKL : x + y < 6 ? ROCKM : ROCKD; }, 1.2);
+      for (var cY = Math.max(visTop, Math.round(3.5 * V)); cY < Math.min(visBot, Math.round(4.1 * V)); cY++) { var ce = -0.5 * gw + (0.035 + 0.015 * Math.sin(cY * 0.04) + 0.01 * Math.sin(cY * 0.013)) * gw; for (var cx2 = -ox; cx2 < ce; cx2++) { var bb2 = BAYER[((cY & 3) << 2) | ((cx2 + ox) & 3)] / 16; put(cx2, cY, ce - cx2 < 2 ? SAND2 : bb2 < 0.55 ? SAND : (bb2 < 0.8 ? DARK : 0)); } if (cY % 37 === 0) spr(['k.k.k', '.kkk.'], ce - 2, cY - 2, 2, { k: KELP }); }
+    }
+    if (visTop < 4.3 * V && visBot > 3.9 * V) {
+      // a sailboat and a buoy on the water
+      var bob = Math.sin(time * 1.6) * 1.5; spr(BOAT, -0.3 * gw, surfY - 20 * sc + bob, Math.max(1, Math.round(2 * sc)), { k: INK, w: WHITE, r: ACC, h: DARK });
+      var byx = 0.28 * gw, byY = surfY - 8 * sc + Math.sin(time * 1.9) * 1.5; for (var by3 = 0; by3 < 10 * sc; by3++) for (var bx3 = -3 * sc; bx3 <= 3 * sc; bx3++) put(byx + bx3, byY + by3, Math.floor(by3 / (3 * sc)) % 2 ? WHITE : RED); if (Math.sin(time * 3) > 0.3) oval(byx, byY - 3 * sc, 2 * sc, 2 * sc, GOLD, 1.3);
+    }
+    if (visTop < 5.6 * V && visBot > 4.1 * V) {
+      // light falling through the shallows
+      for (var ray = 0; ray < 5; ray++) { var rx0 = (-0.4 + ray * 0.2) * gw; for (var rY = Math.max(visTop, Math.round(surfY)); rY < Math.min(visBot, Math.round(surfY + 1.2 * V)); rY += 2) { var dep2 = (rY - surfY) / (1.2 * V), cxr = rx0 + (rY - surfY) * 0.35; for (var rw = -6 * sc; rw <= 6 * sc; rw += 2) if (hash(rw | 0, rY) < 0.22 * (1 - dep2)) put(cxr + rw, rY, WHITE); } }
+    }
+    // jellyfish drifting at the sides
+    [[-0.39, 4.72, PINK], [0.39, 5.55, PEACH], [-0.35, 9.05, PURP], [0.36, 9.6, PINK], [0.4, 8.2, PURP]].forEach(function (jf, k) {
+      var jx = jf[0] * gw + Math.sin(time * 0.5 + k) * 6 * sc, jY = jf[1] * V + Math.sin(time * 0.8 + k) * 6 * sc; if (jY < visTop - 40 || jY > visBot + 10) return;
+      var pulse = 1 + Math.sin(time * 2.2 + k) * 0.12, rxj = 10 * sc * pulse, ryj = 8 * sc / pulse;
+      for (var yj = -ryj; yj <= 0; yj++) for (var xj = -rxj; xj <= rxj; xj++) { var dj = Math.hypot(xj / rxj, yj / ryj); if (dj > 1) continue; put(jx + xj, jY + yj, dj > 0.8 ? WHITE : (BAYER[(((yj | 0) & 3) << 2) | ((xj | 0) & 3)] / 16 < 0.6 ? jf[2] : 0)); }
+      for (var tn = 0; tn < 5; tn++) for (var tl2 = 0; tl2 < 24 * sc; tl2 += 1.5) put(jx + (tn - 2) * 4 * sc + Math.sin(time * 2 + tl2 * 0.25 + tn) * 2 * sc, jY + 1 + tl2, jf[2]);
+    });
+    // small fish crossing in the background
+    [[4.75, 18, GOLD, 5], [5.95, -14, SEA, 4], [7.05, 12, PEACH, 6], [8.95, -10, GOLD, 5], [9.85, 15, FOAM, 4]].forEach(function (sc2, k) {
+      var Ys = sc2[0] * V; if (Ys < visTop - 20 || Ys > visBot + 20) return; var dir = sc2[1] > 0 ? 1 : -1, span = gw + 160, base2 = ((time * Math.abs(sc2[1]) + k * 97) % span) - span / 2;
+      for (var fi = 0; fi < sc2[3]; fi++) { var fxx = (base2 - fi * 12 * sc * dir), fyy = Ys + Math.sin(fi * 1.7 + time * 2) * 4 * sc + (fi % 2) * 6 * sc; var rows2 = dir > 0 ? MINIF : MINIF.map(function (r) { return r.split('').reverse().join(''); }); spr(rows2, fxx * (dir > 0 ? 1 : 1), fyy, Math.max(1, Math.round(sc)), { k: night || d > 1.5 ? DEEPF : NAVY, o: sc2[2] }); }
+    });
+    if (visBot > 5.9 * V && visTop < 8.7 * V) {
+      // canyon walls, with dotted contour lines following them
+      for (var wY = Math.max(visTop, Math.round(5.95 * V)); wY < Math.min(visBot, Math.round(8.65 * V)); wY++) {
+        var fade = Math.min(clamp((wY / V - 5.95) / 0.3), clamp((8.65 - wY / V) / 0.3));
+        [-1, 1].forEach(function (side) {
+          var edge2 = (0.5 - (0.022 + 0.01 * Math.sin(wY * 0.021 + side) + 0.006 * Math.sin(wY * 0.007 + side * 2)) * fade) * gw;
+          for (var wx2 = edge2; wx2 < gw / 2 + 1; wx2++) { var bb3 = BAYER[((wY & 3) << 2) | ((Math.round(wx2) + ox) & 3)] / 16, ink3 = wx2 - edge2 < 1.5 ? ROCKL : bb3 < 0.5 ? ROCKM : bb3 < 0.85 ? ROCKD : 0; if (ink3) put(side * wx2, wY, ink3); }
+          if (wY % 3 === 0) for (var cl = 1; cl <= 2; cl++) put(side * (edge2 - cl * 7 * sc - Math.sin(wY * 0.05 + cl) * 2), wY, DEEPF);
+        });
+      }
+    }
+    if (visBot > 8.5 * V && visTop < 10.1 * V) for (var gl2 = 0; gl2 < 40; gl2++) { var glx = (hash(gl2, 61) - 0.5) * gw, glY = (8.5 + hash(gl2, 62) * 1.45) * V; if (Math.sin(time * 2 + gl2) > 0.2) put(glx, glY, hash(gl2, 63) < 0.4 ? GOLD : FOAM); }
+
+    // ---------- the falling thing: one formation in motion, turning into the next between beats
+    var si = 0; while (si < SEQ.length - 1 && uc >= SEQ[si + 1].a) si++;
+    var cur = SEQ[si], nxt = SEQ[si + 1], morphing = nxt && uc > cur.b, u = morphing ? clamp((uc - cur.b) / (nxt.a - cur.b)) : 0, kind = KIND[si];
+    var FA = this.F[cur.f], FB = nxt ? this.F[nxt.f] : null, PA = this.pose(cur.f, morphing ? cur.b : Math.max(cur.a, uc), time, gw, V, sc), PB = nxt ? this.pose(nxt.f, nxt.a, time, gw, V, sc) : null;
+    var A = this.A, B = this.B, ucA = morphing ? cur.b : uc, mouse = this.mouse && now - this.mouse.t < 3000 ? this.mouse : null;
+    var taps = this.taps = this.taps.filter(function (t) { return now - t.t < 900; });
+    var mScreenY = mouse ? mouse.y - (mid - camTop) : 0;
+    for (var i = 0; i < N; i++) {
+      this.place(cur.f, FA[i], PA, ucA, i, time, A);
+      var px = A.x, py = A.y, ink = A.ink;
+      if (morphing) {
+        this.place(nxt.f, FB[i], PB, nxt.a, i, time, B);
+        var t = clamp((u - this.delay[i]) / 0.78), e = easeInOut(t), m1 = 1 - e, cx = (A.x + B.x) / 2, cy = (A.y + B.y) / 2;
+        if (kind === 'crumple' || kind === 'gather') { var ang2 = (1 - e) * 5 + this.spin[i] * 6, rad = (1 - e) * Math.hypot(A.x - B.x, A.y - B.y) * 0.6 + 4; px = lerp(A.x, B.x, e) + Math.cos(ang2) * rad * Math.sin(Math.PI * e); py = lerp(A.y, B.y, e) + Math.sin(ang2) * rad * Math.sin(Math.PI * e); ink = e < 0.5 ? A.ink : B.ink; }
+        else if (kind === 'pop' || kind === 'crash' || kind === 'scatter' || kind === 'emerge') {
+          var midP;
+          if (kind === 'pop') midP = { x: A.x * 2.2 + this.spin[i] * 40 * sc, y: A.y + (A.y - PA.y) * 1.2 - 20 * sc + this.spin2[i] * 30 * sc };
+          else if (kind === 'crash') { var an = this.spin[i] * 12 + u * 6; midP = { x: Math.cos(an) * (30 + Math.abs(this.spin2[i]) * 40) * sc, y: PA.y + Math.sin(an) * (24 + Math.abs(this.spin2[i]) * 30) * sc }; }
+          else if (kind === 'scatter') midP = { x: A.x + this.spin[i] * 140 * sc, y: A.y + this.spin2[i] * 110 * sc };
+          else midP = { x: lerp(A.x, B.x, 0.5), y: B.y + 30 * sc };
+          if (t < 0.45) { var e1 = easeInOut(t / 0.45); px = lerp(A.x, midP.x, e1); py = lerp(A.y, midP.y, e1); ink = kind === 'crash' && t > 0.15 ? (A.ink ? (i % 3 ? FOAM : WHITE) : 0) : kind === 'emerge' && t > 0.3 ? 0 : A.ink; }
+          else { var e2 = back((t - 0.45) / 0.55); px = lerp(midP.x, B.x, e2); py = lerp(midP.y, B.y, e2); ink = B.ink; if (kind === 'emerge' && py > (BED_V * V - mid) - 1) ink = 0; }
+        } else { cy -= 24 * sc; px = m1 * m1 * A.x + 2 * m1 * e * cx + e * e * B.x; py = m1 * m1 * A.y + 2 * m1 * e * cy + e * e * B.y; ink = e < 0.5 ? A.ink : B.ink; }
+      }
+      if (!ink) continue;
+      if (mouse) { var mx = px - mouse.x, my = py - mScreenY, md = Math.hypot(mx, my); if (md < 22 && md > 0.01) { var push2 = (22 - md) * 0.55; px += mx / md * push2; py += my / md * push2; } }
+      for (var tp = 0; tp < taps.length; tp++) { var ta = (now - taps[tp].t) / 900, tx = px - taps[tp].x, ty = py - (taps[tp].y - (mid - camTop)), td = Math.hypot(tx, ty); if (td < 46 && td > 0.01) { var kick = (46 - td) * 0.5 * Math.sin(Math.PI * ta); px += tx / td * kick; py += ty / td * kick; } }
+      put(px, mid + py, ink); if (!morphing && cur.f > 0) { put(px + 1, mid + py, ink); put(px, mid + py + 1, ink); put(px + 1, mid + py + 1, ink); }
+    }
+    // the circling school's dotted ring, and bubbles from the crab
+    if (uc > 7.25 && uc < 8.3) ring(0, mid, 54 * sc, 54 * 0.72 * sc, DEEPF, 3);
+    if ((uc > 4.2 && uc < 5.55) || uc > 10.6) for (var cb = 0; cb < 6; cb++) { var rise = (time * 14 + cb * 11) % (uc > 10.6 ? 34 : 60); var P3 = uc > 10.6 ? this.pose(7, uc, time, gw, V, sc) : this.pose(3, uc, time, gw, V, sc); ring(P3.x + Math.sin(cb * 2.1) * 26 * sc, mid + P3.y - 30 * sc - rise * sc, 1.5 + cb % 2, 1.5 + cb % 2, cb % 3 ? WHITE : ACC); }
+    if (uc > 4.95 && uc < 5.75) { var sw = Math.sin(Math.PI * clamp((uc - 4.95) / 0.8)); for (var fo = 0; fo < 140; fo++) { if (hash(fo, 1) > sw) continue; var an3 = fo * 2.399 + time * 1.6 + uc * 5, rd = (34 + (fo % 9) * 6) * sc; put(Math.cos(an3) * rd, mid + Math.sin(an3) * rd * 0.6, fo % 4 ? WHITE : FOAM); } }
+    taps.forEach(function (tq) { var age = (now - tq.t) / 900, rr2 = (4 + age * 30); ring(tq.x, camTop + tq.y, rr2, rr2, age < 0.5 ? ACC : (dark ? DEEPF : SAND2)); });
+
+    // leaders: dotted lines from each visible label to the falling thing
+    var leaders = [];
+    LABELS.forEach(function (lb) { var lY = lb.y * V + 52 / L.cell, sy = lY - camTop; if (sy < 0.06 * V || sy > 0.94 * V || uc < lb.at) return; var lx3 = (lb.side === 'l' ? 0.29 : 0.71) * gw - ox + (lb.side === 'l' ? 6 : -6); leaders.push([lx3, lY]); });
+
+    // ---------- print: one pixel per cell, scaled up with smoothing off, a hairline cleared between cells
+    for (var j = 0; j < grid.length; j++) this.px32[j] = grid[j] ? this.colors[grid[j]] : 0;
+    this.pctx.putImageData(this.img, 0, 0);
+    var ctx = this.canvas.getContext('2d'), step = L.cell * L.dpr, oy = -(camTop - row0) * step;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(this.pix, 0, oy, gw * step, rows * step);
+    ctx.globalCompositeOperation = 'destination-out';
+    for (var hx = 1; hx < gw; hx++) ctx.fillRect(Math.round(hx * step) - 1, 0, 1, this.canvas.height);
+    for (var hy2 = 1; hy2 < rows; hy2++) ctx.fillRect(0, Math.round(oy + hy2 * step) - 1, this.canvas.width, 1);
+    ctx.globalCompositeOperation = 'destination-over'; ctx.fillStyle = bg; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+    if (L.w >= 700) { ctx.fillStyle = this.props.accent || '#FF6A1F'; var sz = Math.max(1, step - 1); leaders.forEach(function (ld) { var x0 = ox + ld[0], y0 = ld[1] - camTop, x1 = ox + (ld[0] < 0 ? -40 * sc : 40 * sc), y1 = V * 0.5; var n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) | 0; for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) if (a || b) ctx.fillRect((x0 + a) * step, (y0 + b) * step + oy * 0, sz, sz); for (var k = 3; k <= n; k += 2) { var lx4 = Math.round(lerp(x0, x1, k / n)), ly4 = Math.round(lerp(y0, y1, k / n)); ctx.fillRect(lx4 * step, ly4 * step, sz, sz); } }); }
+
+    // ---------- React only when something you can see changes
+    var reveal = 0; LABELS.forEach(function (lb, k) { if (uc > lb.at) reveal |= 1 << k; });
+    var noteMask = 0; NOTES.forEach(function (nt, k) { if (uc > nt.at) noteMask |= 1 << k; });
+    var late9 = uc > 9.85 && uc < 10.62 ? 1 : 0, lateEnd = uc > 10.72 ? 1 : 0;
+    var progress = Math.round(clamp(S / Math.max(1, story.offsetHeight - H)) * 400) / 4, hint = S < 24 ? 1 : 0, st = this.state;
+    if (reveal !== st.reveal || noteMask !== st.noteMask || progress !== st.progress || hint !== st.hint || late9 !== st.late9 || lateEnd !== st.lateEnd || dark !== st.dark) this.setState({ reveal: reveal, noteMask: noteMask, progress: progress, hint: hint, late9: late9, lateEnd: lateEnd, dark: dark });
+  }
+  renderVals() {
+    var self = this, s = this.state, accent = this.props.accent || '#FF6A1F', narrow = s.narrow;
+    function words(text, start) { return text.split(' ').map(function (t, i) { return { t: t, y: '0%', d: start + i * 60 }; }); }
+    var labels = LABELS.map(function (lb, i) {
+      var on = !!(s.reveal & (1 << i)), left = lb.side === 'l';
+      return { t1: lb.t1, t2: lb.t2, small: lb.small || '', hasSmall: !!lb.small, tag: lb.tag || '', hasTag: !!lb.tag, top: (lb.y * 100) + 'vh',
+        left: narrow ? '24px' : left ? 'calc(29% - 360px)' : '71%', width: narrow ? 'calc(100vw - 48px)' : '360px', kick: lb.kick, align: narrow || !left ? 'left' : 'right', o: on ? 1 : 0, dy: on ? 0 : 10 };
+    });
+    var notes = narrow ? [] : NOTES.map(function (nt, i) { var on = !!(s.noteMask & (1 << i)); return { t1: nt.t1, t2: nt.t2, top: (nt.y * 100) + 'vh', left: 'calc(' + (nt.fx * 100) + '% + ' + nt.dx + 'px)', align: nt.align || 'left', o: on ? 1 : 0, color: nt.red ? '#E0563F' : accent }; });
+    var scale = Math.min(1, (s.vw || 1280) / 1280);
+    return {
+      accent: accent, progress: s.progress, hintOpacity: s.hint,
+      c: Object.assign(s.dark ? { fg: '#F5EEE2', fg2: '#93A3C4', fg3: '#B8C3DA' } : { fg: '#22170F', fg2: '#A6978A', fg3: '#76665A' }, s.theme === 'dark' ? { page: '#14100D', pageInk: '#F5EEE2', pageFaint: '#85786C', pageLine: '#3A3029', pageSheet: '#1E1813', pill: 'rgba(30,24,19,.9)', pillInk: '#F5EEE2', dot: '#F1E6CF', dotCut: '#B9AB9D' } : { page: '#F5EEE2', pageInk: '#22170F', pageFaint: '#A6978A', pageLine: '#E4D8C5', pageSheet: '#FFFAF2', pill: 'rgba(255,250,242,.9)', pillInk: '#22170F', dot: '#22170F', dotCut: '#22170F' }),
+      themeNext: s.theme === 'dark' ? 'Light' : 'Dark',
+      toggleTheme: function () { var t = self.state.theme === 'dark' ? 'light' : 'dark'; self.setState({ theme: t }); self.night = t === 'dark'; self.paint(); try { window.localStorage.setItem('clawback-theme', t); window.dispatchEvent(new CustomEvent('clawback-theme', { detail: t })); } catch (err) {} },
+      hero1: words('your vendors owe you money.', 0), hero2: words('you just haven’t asked.', 360),
+      labels: labels, notes: notes,
+      late: { o9: s.late9, d9: s.late9 ? 0 : 10, oEnd: s.lateEnd, dEnd: s.lateEnd ? 0 : 14, pe: s.lateEnd ? 'auto' : 'none' },
+      setCanvas: this.setCanvas, setScroller: this.setScroller, setStory: this.setStory, setStage: this.setStage, setRoot: this.setRoot, setDemo: this.setDemo, setDemoBox: this.setDemoBox,
+      onMove: this.onMove, onLeave: this.onLeave, onTap: this.onTap,
+      goDemo: function () { if (self.scroller && self.demoEl) self.scroller.scrollTo({ top: self.demoEl.offsetTop, behavior: 'smooth' }); },
+      goTop: function (e) { if (e && e.preventDefault) e.preventDefault(); if (self.scroller) self.scroller.scrollTo({ top: 0, behavior: 'smooth' }); },
+      demoScale: scale, demoHeight: Math.round(800 * scale)
+    };
+  }
+}
+</script>
+</body>
+</html>
