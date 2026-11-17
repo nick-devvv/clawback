@@ -22,6 +22,7 @@ event says "offline".
 
 from __future__ import annotations
 
+import os
 import re
 import time
 import uuid
@@ -61,6 +62,13 @@ _KEY_FILE = ROOT / ".clawback-local" / "agent_keys.json"
 
 async def load_agent_keys(store: Store) -> dict:
     keys = await store.get(AGENT_KEYS)
+    if not keys and os.environ.get("CLAWBACK_AGENT_KEYS"):
+        # Deployed copies reuse the agents made locally (Cognee shows a key once and caps agents per tenant):
+        # paste .clawback-local/agent_keys.json into this env var instead of running setup again.
+        import json
+
+        keys = json.loads(os.environ["CLAWBACK_AGENT_KEYS"])
+        await store.set(AGENT_KEYS, keys)
     if not keys and store.kind == "memory" and _KEY_FILE.exists():
         import json
 
