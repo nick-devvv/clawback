@@ -1,17 +1,20 @@
 <div align="center">
 
-<img src="docs/media/dive.gif" width="100%" alt="The Clawback landing page: scrolling dives from the beach into the ocean, past a beach ball, a wave and a shark, down to a crab on the reef.">
+<img src="docs/media/logo.svg" width="88" alt="Clawback logo: Clawdia the pixel crab holding up a gold coin on the sea floor">
 
 # Clawback
 
-**Your vendors owe you money. Clawback gets it back.**
+**Your vendors owe you money. Clawback gets it back.** An agent that remembers every uptime promise your vendors made, checks it against their own status page, and writes the claim for the credit you're owed. Built on shared [Cognee](https://www.cognee.ai) memory that learns from every reply.
 
-An agent that remembers every uptime promise your vendors made, checks it against their own status page,<br>
-and writes the claim for the credit you're owed. Built on shared [Cognee](https://www.cognee.ai) memory that learns from every reply.
+🦀 **Founder Square · Agents After Dark** · UC Berkeley · Nov 16, 2026 · Nick + Darian
 
 [**Try it live**](https://clawback-two.vercel.app/live) · [Watch the demo](https://clawback-two.vercel.app/demo) · [Landing page](https://clawback-two.vercel.app) · [Spec](docs/MVP.md) · [API](docs/API.md)
 
-<sub>Built in one evening at Founder Square's Agents After Dark hackathon · UC Berkeley · Nov 16, 2026 · Nick + Darian</sub>
+<br>
+
+<img src="docs/media/dive.gif" width="100%" alt="The Clawback landing page: scrolling dives from the beach into the ocean, past a beach ball, a wave and a shark, down to a crab on the reef.">
+
+<sub>The landing page at clawback-two.vercel.app in dark mode: scroll down and the beach turns into the ocean.</sub>
 
 </div>
 
