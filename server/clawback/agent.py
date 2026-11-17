@@ -374,8 +374,8 @@ class Agent:
     async def handoff(self) -> Briefing:
         """A new agent with no state of its own: everything it says comes back from memory."""
         agent_id = _id("agent")
-        a1, refs1, ev1 = await self.memory.recall("Which vendor credits are open or settled, how much is each, and when must we claim by?", datasets=[CLAIMS, PROMISES], agent=WRITER)
-        a2, refs2, ev2 = await self.memory.recall("What lessons have we learned about how each vendor disputes credit claims?", datasets=[PLAYBOOK], agent=WRITER)
+        a1, refs1, ev1 = await self.memory.recall("Summarize every vendor claim and settlement in memory: vendor, amount in USD, period, and whether it is open or settled. List only what memory contains; do not mention what is missing.", datasets=[CLAIMS, PROMISES], agent=WRITER)
+        a2, refs2, ev2 = await self.memory.recall("List the lessons we have learned about how each vendor disputes credit claims, one per line.", datasets=[PLAYBOOK], agent=WRITER)
         open_claims = [r.title for r in refs1 if "claim" in r.title.lower()] or [line.strip("- ") for line in a1.splitlines() if "claim" in line.lower()][:5]
         lessons = [line.strip("- ") for line in a2.splitlines() if line.strip()][:5]
         return Briefing(
