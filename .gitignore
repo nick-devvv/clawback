@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+.vercel/
+.env
+.env*.local
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+next-env.d.ts
+*.tsbuildinfo

@@ -1,0 +1,31 @@
+{
+  "id": "twilio",
+  "name": "Twilio",
+  "statusPage": "https://status.twilio.com",
+  "coveredComponents": [],
+  "plan": "Pay as you go (example spend)",
+  "monthlyFeeUsd": 1500,
+  "promise": {
+    "id": "twilio-sla",
+    "vendorId": "twilio",
+    "service": "Twilio APIs",
+    "targetPct": 99.95,
+    "window": "month",
+    "rule": {
+      "type": "tiered",
+      "tiers": [{ "threshold": 99.95, "inclusive": false, "creditPct": 10 }]
+    },
+    "feeBasis": "fees for the affected Twilio APIs that month",
+    "claimDeadlineDays": 30,
+    "claimHow": "Request through Twilio Customer Support within 30 days of the end of the month; credits go on future invoices, not refunds",
+    "source": {
+      "title": "Twilio APIs Service Level Agreement",
+      "url": "https://www.twilio.com/en-us/legal/service-level-agreement/twilio-apis",
+      "quote": "Monthly API Availability Percentage Threshold: 99.95%",
+      "kind": "sla"
+    },
+    "origin": "sla",
+    "confidence": 1.0
+  },
+  "_note": "Covers the Twilio-branded Services APIs and SendGrid Mail Send. Below 99.95% in a month earns a 10% API Service Credit."
+}

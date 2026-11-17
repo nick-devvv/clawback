@@ -1,0 +1,28 @@
+{
+  "id": "cloudflare",
+  "name": "Cloudflare",
+  "statusPage": "https://www.cloudflarestatus.com",
+  "coveredComponents": [],
+  "plan": "Business",
+  "monthlyFeeUsd": 250,
+  "promise": {
+    "id": "cloudflare-sla",
+    "vendorId": "cloudflare",
+    "service": "Cloudflare Business",
+    "targetPct": 100,
+    "window": "month",
+    "rule": { "type": "proportional", "multiplier": 1, "capPct": 100 },
+    "feeBasis": "the monthly service fee",
+    "claimDeadlineDays": 30,
+    "claimHow": "Tell Customer Support within 5 business days of the incident, then file the claim with evidence by the end of the next billing month",
+    "source": {
+      "title": "Cloudflare Business Service Level Agreement",
+      "url": "https://www.cloudflare.com/business-sla/",
+      "quote": "The Service will serve Customer Content 100% of the time",
+      "kind": "sla"
+    },
+    "origin": "sla",
+    "confidence": 1.0
+  },
+  "_note": "Credit = outage minutes x affected customer ratio / scheduled minutes, times the monthly fee. Capped at one month of fees per 12 months. Enterprise plans use 10x or 25x."
+}

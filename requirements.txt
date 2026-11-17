@@ -1,0 +1,4 @@
+# Runtime deps for the Vercel Python function (api/index.py). Keep this list tiny: Cognee is called over HTTP.
+fastapi>=0.115,<1
+httpx>=0.27,<1
+pydantic>=2.7,<3

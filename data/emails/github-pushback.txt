@@ -1,0 +1,9 @@
+Hi there,
+
+Thanks for reaching out about service credits. We reviewed the incidents you listed. Our records show only 45 minutes of qualifying downtime for GitHub Actions this quarter, because we only count periods where the error rate stayed above 5% for the whole minute. Partial degradations don't qualify.
+
+If you believe this is wrong, please reply with the incident links and the exact start and end times you are counting.
+
+Best,
+GitHub Support
+(Sample reply written for the demo. Not a real message from GitHub.)

@@ -1,0 +1,50 @@
+/* Clawback tokens: warm paper, warm ink, ONE accent (claw orange). Red is only for errors and "contested".
+   Same system as picky and Boneify (hackathon-ui-playbook). Nick: restyle freely, keep the tokens. */
+:root {
+  --paper: #f5eee2;
+  --sheet: #fffaf2;
+  --ink: #22170f;
+  --muted: #76665a;
+  --faint: #a6978a;
+  --line: #e4d8c5;
+  --accent: #ff6a1f;
+  --accent-wash: #ffe3d2;
+  --red: #c4321f;
+  --red-wash: #fbe3dc;
+  --sans: var(--font-geist-sans), system-ui, sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, monospace;
+  --serif: "Instrument Serif", Georgia, serif;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; }
+a { color: inherit; }
+.serif { font-family: var(--serif); font-weight: 400; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+.grain { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; mix-blend-mode: multiply; opacity: 0.3; z-index: 50; }
+
+.card { background: var(--sheet); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line); padding: 20px; }
+.pill { height: 68px; border-radius: 999px; border: 0; background: var(--accent); color: var(--ink); font-size: 18px; font-weight: 600; padding: 0 28px; cursor: pointer; transition: transform 120ms var(--smooth); }
+.pill:active { transform: scale(0.96); }
+.pill:disabled { opacity: 0.5; cursor: default; }
+.ghost { height: 46px; border-radius: 999px; border: 0; background: transparent; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); padding: 0 18px; font-size: 15px; cursor: pointer; transition: transform 120ms var(--smooth), background-color 150ms; }
+.ghost:hover { background: var(--sheet); }
+.ghost:active { transform: scale(0.96); }
+
+/* motion: transform / opacity / clip-path only (playbook) */
+@keyframes arrive { from { opacity: 0; transform: translateY(-18px) scale(0.96); } to { opacity: 1; transform: none; } }
+.arrive { animation: arrive 600ms var(--spring) both; }
+@keyframes print { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+.print { animation: print 900ms steps(18) both; }
+@keyframes shake { 0%, 100% { transform: none; } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.shake { animation: shake 370ms var(--smooth) 1; }
+@media (prefers-reduced-motion: reduce) { .arrive, .print, .shake { animation: none; } }

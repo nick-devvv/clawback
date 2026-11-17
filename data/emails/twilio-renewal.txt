@@ -1,0 +1,9 @@
+Subject: Your Twilio account review
+
+Hi team,
+
+Following up on our call. As discussed, your Programmable Messaging traffic is covered by our API SLA: if monthly API availability falls below 99.95%, you can request a 10% service credit on the affected API fees, within 30 days of the end of the month.
+
+Talk soon,
+Account team
+(Sample email written for the demo. Not a real message from Twilio.)

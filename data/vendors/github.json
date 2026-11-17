@@ -1,0 +1,34 @@
+{
+  "id": "github",
+  "name": "GitHub",
+  "statusPage": "https://www.githubstatus.com",
+  "coveredComponents": ["Git Operations", "API Requests", "Issues", "Pull Requests", "Webhooks", "Pages", "Actions", "Packages"],
+  "plan": "GitHub Enterprise Cloud (example: 100 seats)",
+  "monthlyFeeUsd": 2100,
+  "promise": {
+    "id": "github-sla",
+    "vendorId": "github",
+    "service": "GitHub Enterprise Cloud",
+    "targetPct": 99.9,
+    "window": "quarter",
+    "rule": {
+      "type": "tiered",
+      "tiers": [
+        { "threshold": 99.9, "inclusive": true, "creditPct": 10 },
+        { "threshold": 99.0, "inclusive": false, "creditPct": 25 }
+      ]
+    },
+    "feeBasis": "what you paid for the affected service that quarter",
+    "claimDeadlineDays": 30,
+    "claimHow": "Written request through GitHub Support within 30 days of the end of the quarter",
+    "source": {
+      "title": "GitHub Enterprise Service Level Agreement",
+      "url": "https://docs.github.com/en/site-policy/site-policy-deprecated/github-enterprise-service-level-agreement",
+      "quote": "a 99.9% quarterly uptime commitment",
+      "kind": "sla"
+    },
+    "origin": "sla",
+    "confidence": 1.0
+  },
+  "_note": "This published SLA covers contracts from before Jan 4, 2021; newer contracts point to github.com/customer-terms. The 10%/25% tiers are on what was paid for the affected Service Feature that quarter."
+}
