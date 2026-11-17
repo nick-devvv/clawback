@@ -279,6 +279,9 @@ class Memory:
         if self.target == "offline":
             return {"offline": True}, await self._log("improve", what, t0, True, agent=agent, dataset=name)
         payload: dict[str, Any] = {"dataset_name": name, "review_conflicts": review_conflicts}
+        ds_ids = await self.dataset_ids([dataset])
+        if ds_ids:
+            payload["dataset_id"] = ds_ids[0]  # agents improve the owner's shared datasets, which needs the UUID
         if session_ids:
             payload["session_ids"] = session_ids
         try:
