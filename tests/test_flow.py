@@ -31,8 +31,12 @@ def test_full_demo_flow():
 
     team = client.post("/api/py/agents/setup").json()
     assert set(team["agents"]) == {"auditor", "claims-writer", "inbox-assistant"}
-    perms = {(r["agent"], r["dataset"].split("_")[-1]): r["allowed"] for r in client.get("/api/py/agents/permissions").json()}
+    rows = client.get("/api/py/agents/permissions").json()
+    perms = {(r["agent"], r["dataset"].split("_")[-1]): r["allowed"] for r in rows}
+    denied = {(r["agent"], r["dataset"].split("_")[-1]): r["deniedBy"] for r in rows}
     assert perms[("inbox-assistant", "playbook")] is False  # the permissions moment
+    assert denied[("inbox-assistant", "playbook")] == "offline"  # a refusal, not an error
+    assert denied[("claims-writer", "playbook")] is None
     assert perms[("claims-writer", "playbook")] is True and perms[("auditor", "promises")] is True
 
     seeded = client.post("/api/py/seed").json()

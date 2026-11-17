@@ -68,12 +68,25 @@ async def setup(memory: Memory) -> dict:
 
 
 async def permission_check(memory: Memory) -> list[dict]:
-    """The permissions moment in the demo: each agent tries to read each dataset; Cognee answers."""
+    """The permissions moment in the demo: each agent tries to read each dataset; Cognee answers.
+
+    `allowed` is true only when the read succeeded. `deniedBy` says who refused: "cognee" (a real 403),
+    "offline" (the local ACL stand-in) or null. allowed:false with deniedBy:null is NOT a permission
+    refusal; it's an error (timeout, 401, 5xx, missing agent key) and the summary says which.
+    """
+    keys = (await memory.store.get(AGENT_KEYS) or {}) if memory.target == "cognee" else {}
     rows = []
     for agent in (AUDITOR, WRITER, INBOX):
         for short in (PROMISES, CLAIMS, PLAYBOOK):
+            if memory.target == "cognee" and not keys.get(agent, {}).get("key"):
+                # Without its own key the agent would call Cognee as the owner and read everything,
+                # which would fake the "allowed" cells. Report it instead of calling.
+                rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": False, "deniedBy": None,
+                             "summary": f"no Cognee key for {agent}: run /agents/setup (on 409, delete or rename the agent)"})
+                continue
             _, _, ev = await memory.recall("What do we know?", datasets=[short], agent=agent, top_k=1)
-            rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": ev.ok, "summary": ev.summary})
+            rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": ev.ok,
+                         "deniedBy": ev.detail.get("deniedBy"), "summary": ev.summary})
     return rows
 
 

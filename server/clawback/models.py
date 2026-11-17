@@ -237,3 +237,13 @@ class Health(Model):
     store: Literal["redis", "memory"]
     status_pages: Literal["live", "snapshot"]
     vendors: int
+
+
+class PermissionRow(Model):
+    """One cell of GET /agents/permissions. deniedBy None with allowed False means an error, not a refusal."""
+
+    agent: str
+    dataset: str
+    allowed: bool
+    denied_by: Literal["cognee", "offline"] | None = None
+    summary: str

@@ -146,5 +146,6 @@ export interface TeamReport {
   grants: string[];
   skill: string | null;
 }
-export interface PermissionRow { agent: AgentName; dataset: string; allowed: boolean; summary: string }
+// deniedBy: who refused. allowed:false with deniedBy:null is an error (timeout, missing key), not a refusal.
+export interface PermissionRow { agent: AgentName; dataset: string; allowed: boolean; deniedBy: "cognee" | "offline" | null; summary: string }
 export interface SkillProposal { proposalId?: string; offline?: boolean; error?: string; [k: string]: unknown }

@@ -208,7 +208,7 @@ class Memory:
         if self.target == "offline":
             allowed = [d for d in datasets if "read" in ACL.get(agent, {}).get(d, set())]
             if not allowed:
-                return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
+                return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id, detail={"deniedBy": "offline"})
             items = [it for it in await self.store.get(OFFLINE_KEY) or [] if it["dataset"] in allowed and (it["session_id"] in (None, session_id))]
             q = _words(query)
             hits = sorted((it for it in items if q & _words(it["title"] + " " + it["text"])), key=lambda it: len(q & _words(it["title"] + " " + it["text"])), reverse=True)[:top_k]
@@ -222,8 +222,9 @@ class Memory:
             rows = await self.post("/api/v1/recall", agent=agent, json=payload, timeout=90.0)
             answer, refs = _read_recall(rows)
             return answer, refs, await self._log("recall", f"\"{query[:64]}\" -> {len(refs)} references", t0, True, agent=agent, dataset=",".join(names), session_id=session_id)
-        except Denied:
-            return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
+        except Denied as err:
+            # Only a real HTTP 403 from Cognee lands here; timeouts, 401s and 5xx go to the branch below.
+            return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id, detail={"deniedBy": "cognee", "status": 403, "body": str(err)[:200]})
         except Exception as err:
             return "", [], await self._log("recall", f"recall failed: {err}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
 
