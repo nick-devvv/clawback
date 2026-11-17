@@ -16,6 +16,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = {"Main": ("landing", "Clawback · your vendors owe you money", None), "Demo": ("demo", "Clawback · watch it", "1280x800"), "Live": ("live", "Clawback · try it live", None)}
 LINKS = {"Main.dc.html": "/", "Demo.dc.html": "/demo", "Live.dc.html": "/live"}
+SITE = "https://clawback-two.vercel.app"
+ROUTE = {"landing": "/", "demo": "/demo", "live": "/live"}
 DESCRIPTION = "Clawback finds the uptime credits your vendors owe you, writes the claim, and learns from every reply. Built with Cognee."
 
 
@@ -41,6 +43,14 @@ def build(name: str) -> str:
 <meta name="description" content="{DESCRIPTION}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{DESCRIPTION}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{SITE}{ROUTE[slug]}">
+<meta property="og:image" content="{SITE}/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta property="og:image:alt" content="Clawback: your vendors owe you money. GitHub owes you $630.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE}/site/og.png">
 <link rel="icon" href="/site/favicon.svg" type="image/svg+xml">
 <style>{page_css}</style>
 {helmet}
