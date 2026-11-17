@@ -7,9 +7,9 @@
 import { useEffect, useState } from "react";
 import { api, isReplaying } from "@/lib/api";
 import type { Audit, Briefing, Claim, Health, MemoryEvent, PermissionRow, Vendor } from "@/lib/types";
-import { Crab } from "./_ui/Crab";
-import { MemoryTape } from "./_ui/MemoryTape";
-import { Receipt } from "./_ui/Receipt";
+import { Crab } from "../_ui/Crab";
+import { MemoryTape } from "../_ui/MemoryTape";
+import { Receipt } from "../_ui/Receipt";
 
 const PUSHBACK =
   "Thanks for reaching out. Our records show only 45 minutes of qualifying downtime for GitHub Actions this quarter, because we only count periods where the error rate stayed above 5% for the whole minute.";

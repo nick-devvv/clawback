@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clawback · try it live</title>
+<meta name="description" content="Clawback finds the uptime credits your vendors owe you, writes the claim, and learns from every reply. Built with Cognee.">
+<meta property="og:title" content="Clawback · try it live">
+<meta property="og:description" content="Clawback finds the uptime credits your vendors owe you, writes the claim, and learns from every reply. Built with Cognee.">
+<link rel="icon" href="/site/favicon.svg" type="image/svg+xml">
+<style>html,body{margin:0;height:100%}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;800&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5EEE2}
+a{color:inherit}
+.lv-btn{transition:transform 120ms cubic-bezier(.22,1,.36,1),background-color 150ms,box-shadow 150ms}
+.lv-btn:active{transform:scale(.96)}
+.lv-head:hover .lv-title{color:#22170F}
+.lv-pick{transition:box-shadow 150ms cubic-bezier(.22,1,.36,1)}
+@keyframes lvIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes lvRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes lvGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes lvSlam{0%{opacity:0;transform:translateY(40px) rotate(-6deg)}60%{opacity:1;transform:translateY(-4px) rotate(1deg)}100%{opacity:1;transform:none}}
+@keyframes lvPing{0%{box-shadow:0 0 0 0 rgba(255,106,31,.75)}100%{box-shadow:0 0 0 7px rgba(255,106,31,0)}}
+@media (max-width: 980px){.lv-root{grid-template-columns:1fr !important;height:auto !important}.lv-main,.lv-aside{height:auto !important;overflow:visible !important}}
+@media (max-width: 640px){.lv-ops{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important}}
+</style>
+
+</head>
+<body data-props='{"accent": "#FF6A1F", "theme": "light", "speed": "normal"}'>
+<template id="tpl">
+
+<div class="lv-root" style="display: grid; grid-template-columns: minmax(0, 1fr) 440px; height: 100vh; background: {{c.bg}}; color: {{c.ink}}; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif">
+
+  <main class="lv-main" style="height: 100vh; overflow-y: auto; padding: 22px 40px 80px; box-sizing: border-box; min-width: 0">
+    <header style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none">
+        <svg width="22" height="14" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 1h2v1H0zM1 0h1v1H1zM9 0h1v1H9zM9 1h2v1H9zM1 2h1v1H1zM9 2h1v1H9zM3 3h5v1H3zM2 4h7v2H2zM1 6h1v1H1zM3 6h1v1H3zM7 6h1v1H7zM9 6h1v1H9z" fill="#FF6A1F"></path><path d="M4 2h1v1H4zM6 2h1v1H6z" fill="{{c.ink}}"></path></svg>
+        <span style="font-weight: 800; letter-spacing: -0.055em; font-size: 20px">Clawback</span>
+      </a>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}">
+        <span style="padding: 6px 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{c.line}}">status pages: {{statusLabel}}</span>
+        <span style="padding: 6px 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px {{c.line}}">memory: {{memoryLabel}}</span>
+        <button type="button" class="lv-btn" onClick="{{toggleTheme}}" aria-label="Switch to {{themeNext}} mode" style="all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; color: {{c.ink}}">{{themeNext}} mode</button>
+        <button type="button" class="lv-btn" onClick="{{reset}}" style="all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; color: {{c.ink}}">Start over</button>
+      </div>
+    </header>
+
+    <sc-if value="{{notice.on}}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 18px 0 0; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.45; background: {{notice.bg}}; color: {{notice.color}}">{{notice.text}}</div>
+    </sc-if>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin: 40px 0 28px">
+      <div>
+        <h1 style="margin: 0; font-size: clamp(34px, 3.6vw, 54px); line-height: 1; font-weight: 500; letter-spacing: -0.035em">try it live.</h1>
+        <p style="margin: 4px 0 0; font-size: clamp(34px, 3.6vw, 54px); line-height: 1; font-weight: 500; letter-spacing: -0.035em; color: {{c.faint}}">one claim, start to finish.</p>
+      </div>
+      <div style="text-align: right">
+        <div key="{{recoveredKey}}" style="font-size: clamp(34px, 3.6vw, 54px); line-height: 1; font-weight: 500; letter-spacing: -0.035em; color: {{recoveredColor}}; animation: {{recoveredAnim}}">{{recoveredText}}</div>
+        <div style="margin-top: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">{{recoveredNote}}</div>
+      </div>
+    </div>
+
+    <div style="margin: 0 0 22px; padding: 18px 20px; border-radius: 20px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap">
+        <div style="font-size: 17px; font-weight: 500">How Clawback uses Cognee</div>
+        <div style="font-size: 13px; color: {{c.muted}}">3 agents share 1 memory, split into 3 datasets with permissions. Every step calls one of these four.</div>
+      </div>
+      <div class="lv-ops" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px">
+        <sc-for list="{{ops}}" as="op" hint-placeholder-count="4">
+          <div class="lv-pick" style="padding: 12px 14px; border-radius: 14px; background: {{c.bg}}; box-shadow: {{op.ring}}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; color: {{accent}}">{{op.name}}</span><span key="{{op.key}}" style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 22px; font-weight: 500; animation: {{op.anim}}">{{op.n}}</span></div>
+            <div style="margin-top: 6px; font-size: 13px; line-height: 1.4; color: {{c.muted}}">{{op.what}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+
+      <!-- promises -->
+      <li ref="{{st.promises.ref}}" style="border-radius: 20px; background: {{st.promises.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.promises.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.promises.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.promises.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.promises.nameColor}}">promises</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">Remember what each vendor promised</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.promises.result}}</span>
+        </button>
+        <sc-if value="{{st.promises.open}}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-for list="{{vendors}}" as="v" hint-placeholder-count="3">
+              <div style="display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 16px; align-items: baseline; padding: 12px 0; border-top: 1px solid {{c.line}}">
+                <div><div style="font-weight: 500">{{v.name}}</div><div style="font-size: 13px; color: {{c.faint}}">{{v.plan}}</div></div>
+                <div style="min-width: 0"><div style="font-size: 15px">{{v.promise}}</div><a href="{{v.url}}" target="_blank" rel="noreferrer" style="font-size: 13px; color: {{c.muted}}">{{v.rule}}</a></div>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{v.stateColor}}">{{v.state}}</span>
+              </div>
+            </sc-for>
+            <div style="display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap">
+              <button type="button" class="lv-btn" onClick="{{b.seed.onClick}}" style="all: unset; cursor: pointer; display: {{b.seed.display}}; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.seed.opacity}}">{{b.seed.label}}</button>
+              <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">remember() x 3, by the Auditor, into promises</span>
+            </div>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.promises.label}}</span><span>{{cog.promises.state}}</span></div>
+              <sc-for list="{{cog.promises.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.promises.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- audit -->
+      <li ref="{{st.audit.ref}}" style="border-radius: 20px; background: {{st.audit.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.audit.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.audit.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.audit.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.audit.nameColor}}">audit</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">Check their own status pages</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.audit.result}}</span>
+        </button>
+        <sc-if value="{{st.audit.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-if value="{{audited}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px">
+                <div style="padding: 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) both">
+                  <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: 500">GitHub</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #C4321F">broken</span></div>
+                  <div style="font-size: 13px; color: {{c.faint}}">Actions, Oct 1 to now</div>
+                  <div style="margin-top: 10px; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -0.03em; color: #C4321F">{{gh.uptime}}</div>
+                  <div style="font-size: 13px; color: {{c.muted}}">{{gh.promise}}</div>
+                  <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 4px; height: 56px; margin-top: 14px">
+                    <sc-for list="{{bars}}" as="bar" hint-placeholder-count="12">
+                      <span style="display: block; width: 9px; height: {{bar.h}}px; background: #C4321F; transform-origin: 50% 100%; animation: lvGrow 420ms cubic-bezier(.22,1,.36,1) {{bar.delay}}ms both"></span>
+                    </sc-for>
+                  </div>
+                  <div style="margin-top: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}">{{gh.minutesText}}</div>
+                  <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 12px"><span style="font-size: 32px; font-weight: 500; letter-spacing: -0.03em; color: {{accent}}">{{gh.owed}}</span><span style="font-size: 13px; color: {{c.muted}}">{{gh.owedNote}}</span></div>
+                  <button type="button" onClick="{{toggleIncidents}}" style="all: unset; cursor: pointer; margin-top: 10px; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: {{c.ink}}">{{incidentsLabel}}</button>
+                </div>
+                <div style="padding: 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) 80ms both">
+                  <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: 500">Twilio</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}">kept</span></div>
+                  <div style="font-size: 13px; color: {{c.faint}}">APIs, November</div>
+                  <div style="margin-top: 10px; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -0.03em">{{tw.uptime}}</div>
+                  <div style="font-size: 13px; color: {{c.muted}}">promised 99.95% a month</div>
+                  <div style="margin-top: 12px; font-size: 32px; font-weight: 500; letter-spacing: -0.03em; color: {{c.faint}}">$0</div>
+                  <div style="font-size: 13px; color: {{c.muted}}">{{tw.note}}</div>
+                </div>
+                <div style="padding: 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) 160ms both">
+                  <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-weight: 500">Cloudflare</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}">kept</span></div>
+                  <div style="font-size: 13px; color: {{c.faint}}">Business, November</div>
+                  <div style="margin-top: 10px; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -0.03em">{{cf.uptime}}</div>
+                  <div style="font-size: 13px; color: {{c.muted}}">promised 100% a month</div>
+                  <div style="margin-top: 12px; font-size: 32px; font-weight: 500; letter-spacing: -0.03em; color: {{c.faint}}">$0</div>
+                  <div style="font-size: 13px; color: {{c.muted}}">{{cf.note}}</div>
+                </div>
+              </div>
+              <sc-if value="{{incidentsOpen}}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 12px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; padding: 6px 16px">
+                  <sc-for list="{{incidents}}" as="inc" hint-placeholder-count="12">
+                    <div style="display: grid; grid-template-columns: 112px 72px 64px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-top: {{inc.border}}; font-size: 13px">
+                      <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}">{{inc.date}}</span>
+                      <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px">{{inc.min}} min</span>
+                      <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{inc.impactColor}}">{{inc.impact}}</span>
+                      <a href="{{inc.url}}" target="_blank" rel="noreferrer" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{inc.name}}</a>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{notAudited}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+                <button type="button" class="lv-btn" onClick="{{b.audit.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.audit.opacity}}">{{b.audit.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">githubstatus.com, status.twilio.com, cloudflarestatus.com</span>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.audit.label}}</span><span>{{cog.audit.state}}</span></div>
+              <sc-for list="{{cog.audit.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.audit.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- claim -->
+      <li ref="{{st.claim.ref}}" style="border-radius: 20px; background: {{st.claim.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.claim.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.claim.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.claim.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.claim.nameColor}}">claim</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">Write the claim and send it</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.claim.result}}</span>
+        </button>
+        <sc-if value="{{st.claim.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-if value="{{drafted}}" hint-placeholder-val="{{ false }}">
+              <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; margin-bottom: 10px">{{recallNote}}</div>
+              <div style="border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; overflow: hidden; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) both">
+                <div style="display: grid; grid-template-columns: 64px 1fr; gap: 4px 12px; padding: 14px 18px; border-bottom: 1px solid {{c.line}}; font-size: 14px">
+                  <span style="color: {{c.faint}}">To</span><span>GitHub Support</span>
+                  <span style="color: {{c.faint}}">Subject</span><span style="font-weight: 500">{{emailSubject}}</span>
+                </div>
+                <div style="padding: 14px 18px; max-height: 260px; overflow-y: auto; font-size: 14px; line-height: 1.55; white-space: pre-wrap">{{emailBody}}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap">
+                <button type="button" class="lv-btn" onClick="{{b.send.onClick}}" style="all: unset; cursor: pointer; display: {{b.send.display}}; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{accent}}; color: #22170F; font-size: 15px; font-weight: 600; opacity: {{b.send.opacity}}">{{b.send.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{sentColor}}">{{sentNote}}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{notDrafted}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+                <button type="button" class="lv-btn" onClick="{{b.draft.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.draft.opacity}}">{{b.draft.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">the Claims Writer checks the playbook first</span>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.claim.label}}</span><span>{{cog.claim.state}}</span></div>
+              <sc-for list="{{cog.claim.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.claim.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- pushback -->
+      <li ref="{{st.pushback.ref}}" style="border-radius: 20px; background: {{st.pushback.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.pushback.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.pushback.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.pushback.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.pushback.nameColor}}">pushback</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">They push back. Pick the true story</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.pushback.result}}</span>
+        </button>
+        <sc-if value="{{st.pushback.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-if value="{{notReplied}}" hint-placeholder-val="{{ true }}">
+              <div style="border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; padding: 14px 18px; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) both">
+                <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 14px"><span style="font-weight: 500">GitHub Support</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">Re: Service credit request</span></div>
+                <p style="margin: 10px 0 0; font-size: 14px; line-height: 1.55">Our records show only 45 minutes of qualifying downtime for GitHub Actions this quarter, because we only count periods where the error rate stayed above 5% for the whole minute. Partial degradations don't qualify.</p>
+                <p style="margin: 10px 0 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: {{c.faint}}">Sample reply written for the demo. Not a real message from GitHub.</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap">
+                <button type="button" class="lv-btn" onClick="{{b.reply.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.reply.opacity}}">{{b.reply.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">remember(), then improve() reviews conflicts</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{replied}}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 15px; font-weight: 500">How long was GitHub Actions down this quarter?</div>
+              <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; margin-top: 4px">Cognee holds two answers that disagree, each with its source</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px">
+                <sc-for list="{{facts}}" as="f" hint-placeholder-count="2">
+                  <button type="button" class="lv-pick" onClick="{{f.pick}}" aria-pressed="{{f.pressed}}" style="all: unset; box-sizing: border-box; cursor: {{f.cursor}}; padding: 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: {{f.ring}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) {{f.delay}}ms both">
+                    <div style="font-size: 32px; font-weight: 500; letter-spacing: -0.03em; color: {{f.valueColor}}">{{f.value}}</div>
+                    <div style="font-size: 14px; margin-top: 4px">{{f.text}}</div>
+                    <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}; margin-top: 8px">{{f.source}}</div>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{notResolved}}" hint-placeholder-val="{{ true }}">
+                <label style="display: block; margin-top: 14px; font-size: 13px; color: {{c.muted}}" for="lv-reason">Why</label>
+                <textarea id="lv-reason" ref="{{setReason}}" onInput="{{onReason}}" rows="2" style="box-sizing: border-box; width: 100%; margin-top: 6px; padding: 12px 14px; border: 0; border-radius: 14px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; font: inherit; font-size: 14px; line-height: 1.45; color: {{c.ink}}; resize: vertical">Their own status page lists every incident with start and end times. The SLA counts those minutes.</textarea>
+                <div style="display: flex; align-items: center; gap: 14px; margin-top: 12px; flex-wrap: wrap">
+                  <button type="button" class="lv-btn" onClick="{{b.resolve.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.resolve.opacity}}">{{b.resolve.label}}</button>
+                  <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">{{resolveHint}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{resolved}}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top: 14px; font-size: 15px">{{outcome}}</div>
+                <div style="margin-top: 10px; padding: 12px 16px; border-radius: 14px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) both">
+                  <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">saved to the playbook</div>
+                  <div style="font-size: 14px; margin-top: 4px">{{lesson}}</div>
+                </div>
+              </sc-if>
+            </sc-if>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.pushback.label}}</span><span>{{cog.pushback.state}}</span></div>
+              <sc-for list="{{cog.pushback.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.pushback.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- molt -->
+      <li ref="{{st.molt.ref}}" style="border-radius: 20px; background: {{st.molt.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.molt.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.molt.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.molt.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.molt.nameColor}}">improve()</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">Let it rewrite its own skill</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.molt.result}}</span>
+        </button>
+        <sc-if value="{{st.molt.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
+              <sc-for list="{{loop}}" as="lp" hint-placeholder-count="4"><span style="padding: 6px 11px; border-radius: 999px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; background: {{lp.bg}}; color: {{lp.color}}; box-shadow: inset 0 0 0 1px {{lp.ring}}">{{lp.t}}</span><span style="display: {{lp.arrow}}; color: {{c.faint}}; font-size: 13px">then</span></sc-for>
+            </div>
+            <div style="font-size: 14px; color: {{c.muted}}">Cognee read this session and proposed a new claim-writer skill. This is the self-improvement loop: your feedback becomes a lesson, and the skill that writes claims is rewritten.</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px">
+              <div style="padding: 14px 16px; border-radius: 16px; box-shadow: inset 0 0 0 1px {{c.line}}">
+                <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">claim-writer v1</div>
+                <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: {{c.muted}}; white-space: pre-wrap; max-height: 220px; overflow-y: auto">{{skill.v1}}</p>
+              </div>
+              <div style="padding: 14px 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{v2Ring}}">
+                <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">claim-writer v2</div>
+                <sc-if value="{{skill.live}}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; max-height: 220px; overflow-y: auto">{{skill.v2}}</p>
+                  <p style="margin: 8px 0 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: {{c.faint}}">{{skill.why}}</p>
+                </sc-if>
+                <sc-if value="{{skill.notLive}}" hint-placeholder-val="{{ true }}">
+                <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.5">Name the SLA and quote the promise. List each counted incident with its date, minutes and status-page link. State the credit and the amount. Check the playbook first.</p>
+                </sc-if>
+                <sc-for list="{{v2Lines}}" as="line" hint-placeholder-count="2">
+                  <p style="margin: 6px 0 0; padding-left: 10px; box-shadow: inset 2px 0 0 {{accent}}; font-size: 13px; line-height: 1.5">{{line}}</p>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap">
+              <button type="button" class="lv-btn" onClick="{{b.apply.onClick}}" style="all: unset; cursor: pointer; display: {{b.apply.display}}; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.apply.opacity}}">{{b.apply.label}}</button>
+              <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{applyColor}}">{{applyNote}}</span>
+            </div>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.molt.label}}</span><span>{{cog.molt.state}}</span></div>
+              <sc-for list="{{cog.molt.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.molt.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- paid -->
+      <li ref="{{st.paid.ref}}" style="border-radius: 20px; background: {{st.paid.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.paid.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.paid.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.paid.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.paid.nameColor}}">forget()</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">{{paidTitle}}</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.paid.result}}</span>
+        </button>
+        <sc-if value="{{st.paid.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-if value="{{notPaid}}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 14px; color: {{c.muted}}">{{paidIntro}}</div>
+              <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap">
+                <button type="button" class="lv-btn" onClick="{{b.paid.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.paid.opacity}}">{{b.paid.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">forget() the claim, remember() a settled note</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{paid}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                <div style="padding: 14px 16px; border-radius: 16px; box-shadow: inset 0 0 0 1px {{c.line}}">
+                  <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">forgotten</div>
+                  <div style="margin-top: 8px; font-size: 14px; line-height: 1.6; color: {{c.faint}}; text-decoration: line-through">Claim: GitHub Q4 2026<br>GitHub Support's reply<br>The working session</div>
+                </div>
+                <div style="padding: 14px 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 360ms cubic-bezier(.22,1,.36,1) both">
+                  <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">kept</div>
+                  <div style="margin-top: 8px; font-size: 14px; line-height: 1.5">{{settledText}}</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.paid.label}}</span><span>{{cog.paid.state}}</span></div>
+              <sc-for list="{{cog.paid.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.paid.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+
+      <!-- handoff -->
+      <li ref="{{st.handoff.ref}}" style="border-radius: 20px; background: {{st.handoff.bg}}; box-shadow: inset 0 0 0 1px {{c.line}}; opacity: {{st.handoff.opacity}}">
+        <button type="button" class="lv-head" onClick="{{st.handoff.toggle}}" style="all: unset; box-sizing: border-box; cursor: {{st.handoff.cursor}}; display: flex; align-items: baseline; gap: 16px; width: 100%; padding: 16px 20px">
+          <span style="width: 84px; flex: none; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{st.handoff.nameColor}}">new agent</span>
+          <span class="lv-title" style="flex: 1; min-width: 0; font-size: 17px; font-weight: 500">Kill the agent. Start a new one</span>
+          <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; text-align: right">{{st.handoff.result}}</span>
+        </button>
+        <sc-if value="{{st.handoff.open}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 20px 20px 120px; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">
+            <sc-if value="{{notHanded}}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 14px; color: {{c.muted}}">The agent that did all of this stops. A new one starts with nothing but Cognee.</div>
+              <div style="display: flex; align-items: center; gap: 14px; margin-top: 14px">
+                <button type="button" class="lv-btn" onClick="{{b.handoff.onClick}}" style="all: unset; cursor: pointer; display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: {{c.ink}}; color: {{c.bg}}; font-size: 15px; font-weight: 500; opacity: {{b.handoff.opacity}}">{{b.handoff.label}}</button>
+                <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">two recall() calls, nothing else</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{handed}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 200px 1fr; gap: 12px">
+                <div style="padding: 14px 16px; border-radius: 16px; box-shadow: inset 0 0 0 1px {{c.line}}; color: {{c.faint}}">
+                  <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px">agent_71e3</div>
+                  <div style="margin-top: 8px; font-size: 14px; text-decoration: line-through">stopped</div>
+                </div>
+                <div style="padding: 14px 16px; border-radius: 16px; background: {{c.sheet}}; box-shadow: inset 0 0 0 1px {{c.line}}; animation: lvRise 420ms cubic-bezier(.22,1,.36,1) both">
+                  <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{accent}}">agent_6bf0, new</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">recalled from Cognee</span></div>
+                  <sc-for list="{{briefing}}" as="br" hint-placeholder-count="4">
+                    <div style="display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 8px 0; border-top: {{br.border}}; font-size: 14px; animation: lvIn 260ms cubic-bezier(.22,1,.36,1) {{br.delay}}ms both">
+                      <span style="color: {{c.faint}}">{{br.k}}</span><span>{{br.v}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: 16px; border-radius: 14px; background: {{c.code}}; color: #F5EEE2; padding: 12px 16px; box-shadow: inset 0 0 0 1px {{c.codeRing}}">
+              <div style="display: flex; justify-content: space-between; gap: 12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A"><span>{{cog.handoff.label}}</span><span>{{cog.handoff.state}}</span></div>
+              <sc-for list="{{cog.handoff.calls}}" as="k" hint-placeholder-count="2">
+                <div style="margin-top: 5px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.45; opacity: {{k.o}}"><span style="color: {{k.color}}">{{k.op}}</span> <span style="color: #CDBFB1">{{k.args}}</span></div>
+              </sc-for>
+              <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: #E9DFD2">{{cog.handoff.why}}</div>
+            </div>
+          </div>
+        </sc-if>
+      </li>
+    </ol>
+
+    <p style="margin: 28px 0 0; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{c.faint}}">Status data and SLA terms are real and linked. The plan price is an example. GitHub Support's reply is a written sample.</p>
+  </main>
+
+  <aside class="lv-aside" style="height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; padding: 24px; background: {{c.aside}}; color: #F5EEE2; min-width: 0">
+    <div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <span style="font-size: 17px; font-weight: 500">shared memory</span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #A6978A">Cognee, 3 datasets</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px">
+        <sc-for list="{{datasets}}" as="d" hint-placeholder-count="3">
+          <div key="{{d.key}}" style="padding: 12px; border-radius: 14px; box-shadow: inset 0 0 0 1px rgba(245,238,226,.14); animation: {{d.anim}}">
+            <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 26px; line-height: 1">{{d.count}}</div>
+            <div style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A; margin-top: 6px">{{d.name}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <span style="font-size: 17px; font-weight: 500">permissions</span>
+        <button type="button" class="lv-btn" onClick="{{b.perms.onClick}}" style="all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(245,238,226,.24); font-size: 13px; opacity: {{b.perms.opacity}}">{{b.perms.label}}</button>
+      </div>
+      <div role="table" style="margin-top: 12px; display: grid; grid-template-columns: 96px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center">
+        <span></span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">promises</span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">claims</span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">playbook</span>
+        <sc-for list="{{permCells}}" as="pc" hint-placeholder-count="12">
+          <span key="{{pc.key}}" style="white-space: nowrap; padding: {{pc.pad}}; border-radius: 8px; font-family: {{pc.font}}; font-size: {{pc.size}}; color: {{pc.color}}; background: {{pc.bg}}; animation: {{pc.anim}}">{{pc.text}}</span>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <span style="font-size: 17px; font-weight: 500">memory tape</span>
+        <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #A6978A">{{tapeCount}}</span>
+      </div>
+      <div style="flex: 1; min-height: 120px; overflow-y: auto; margin-top: 10px">
+        <sc-if value="{{tapeEmpty}}" hint-placeholder-val="{{ true }}">
+          <p style="margin: 8px 0 0; font-size: 14px; color: #A6978A">Nothing yet. Every remember, recall, improve and forget lands here.</p>
+        </sc-if>
+        <sc-for list="{{tape}}" as="t" hint-placeholder-count="0">
+          <div key="{{t.id}}" style="display: grid; grid-template-columns: 62px 74px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 9px 0; border-top: 1px solid rgba(245,238,226,.1); animation: lvIn 260ms cubic-bezier(.22,1,.36,1) both">
+            <span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #76665A">{{t.at}}</span>
+            <span style="justify-self: start; padding: {{t.opPad}}; border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: {{t.opColor}}; background: {{t.opBg}}">{{t.op}}</span>
+            <span style="min-width: 0"><span style="display: block; font-size: 13px; line-height: 1.35">{{t.summary}}</span><span style="display: block; margin-top: 2px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; color: #A6978A">{{t.meta}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div style="display: flex; gap: 8px">
+        <input ref="{{setAsk}}" onKeyDown="{{onAskKey}}" aria-label="Ask the memory" placeholder="Ask the memory: what does GitHub owe us?" style="flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: rgba(245,238,226,.08); box-shadow: inset 0 0 0 1px rgba(245,238,226,.18); color: #F5EEE2; font: inherit; font-size: 14px">
+        <button type="button" class="lv-btn" onClick="{{ask}}" style="all: unset; cursor: pointer; height: 44px; padding: 0 18px; display: inline-flex; align-items: center; border-radius: 999px; background: #F5EEE2; color: #22170F; font-size: 14px; font-weight: 500">Ask</button>
+      </div>
+      <sc-if value="{{hasAnswer}}" hint-placeholder-val="{{ false }}">
+        <p key="{{answerKey}}" style="margin: 12px 0 0; font-size: 14px; line-height: 1.5; animation: lvRise 260ms cubic-bezier(.22,1,.36,1) both">{{answer}}</p>
+      </sc-if>
+    </div>
+  </aside>
+</div>
+</template>
+<div id="app"></div>
+<script src="/site/dc-runtime.js"></script>
+<script>
+
+/* Try it live: the real Clawback flow, one step at a time, with the shared memory on the right.
+   In the build every button calls Darian's API (docs/API.md, base /api/py); here it replays the recorded run
+   (data/demo/recorded.json) with the same memory calls, so the design can be clicked end to end. */
+var STEPS = ['promises', 'audit', 'claim', 'pushback', 'molt', 'paid', 'handoff'];
+var VENDORS = [
+  { id: 'github', name: 'GitHub', plan: 'Enterprise Cloud', promise: '99.9% uptime a quarter', rule: '10% back at or below 99.9%, 25% below 99%. GitHub Enterprise SLA', url: 'https://docs.github.com/en/site-policy/site-policy-deprecated/github-enterprise-service-level-agreement' },
+  { id: 'twilio', name: 'Twilio', plan: 'APIs', promise: '99.95% uptime a month', rule: '10% back below 99.95%. Twilio APIs SLA', url: 'https://www.twilio.com/en-us/legal/service-level-agreement/twilio-apis' },
+  { id: 'cloudflare', name: 'Cloudflare', plan: 'Business', promise: '100% uptime a month', rule: '1x the fee for the share of time it was down. Cloudflare Business SLA', url: 'https://www.cloudflare.com/business-sla/' }
+];
+var INCIDENTS = [
+  ['Oct 5, 19:11', 217.7, 'critical', 'Incident with Actions', 'c11dc9nb1zdq'],
+  ['Oct 7, 17:17', 47.7, 'critical', 'Incident with Git Operations, Issues, Actions and Pull Requests', '4p8x0jnnsx7m'],
+  ['Oct 19, 15:49', 67.5, 'critical', 'Degraded availability for GitHub Actions, GitHub Pages and Webhooks', 'nrv2k8s68bwn'],
+  ['Oct 21, 14:52', 270.0, 'critical', 'Delays for Pull Requests and Webhook deliveries', 'gnnt0tx9nxmk'],
+  ['Oct 30, 17:50', 92.8, 'major', 'Incident with Actions, Pages, and Webhooks', '5cd2m4n59spv'],
+  ['Nov 4, 09:49', 120.2, 'major', 'Incident with Pull Requests, Git Operations and Issues', '18blsgwnbyy6'],
+  ['Nov 4, 16:05', 55.7, 'major', 'Incident with Actions and Pages', 'pjgptg3cfc6n'],
+  ['Nov 4, 17:40', 35.6, 'major', 'Incident with Actions', '7pwv28hvkmz8'],
+  ['Nov 9, 10:00', 110.0, 'major', 'Incident with Webhooks and Actions', '4vdghm7tycm4'],
+  ['Nov 9, 18:12', 46.9, 'critical', 'Incident with Actions and Checks API', '7yw63xl9ztrv'],
+  ['Nov 10, 16:10', 104.2, 'critical', 'Incident with Git Operations and Pull Requests', '16nsnk2th3rv'],
+  ['Nov 11, 20:48', 33.5, 'critical', 'Impact across multiple GitHub products including Actions, Pages, and Copilot products', 'jdjlq5zjyl48']
+];
+var AGENTS = ['Auditor', 'Claims Writer', 'Inbox Assistant'];
+var DATASETS = ['promises', 'claims', 'playbook'];
+var GRANTS = { 'Auditor': ['read + write', 'denied', 'denied'], 'Claims Writer': ['read', 'read + write', 'read + write'], 'Inbox Assistant': ['read', 'read', 'denied'] };
+var THEME = {
+  light: { bg: '#F5EEE2', sheet: '#FFFAF2', ink: '#22170F', muted: '#76665A', faint: '#A6978A', line: '#E4D8C5', aside: '#22170F', code: '#22170F', codeRing: 'transparent' },
+  dark: { bg: '#14100D', sheet: '#1E1813', ink: '#F5EEE2', muted: '#B5A595', faint: '#85786C', line: '#3A3029', aside: '#0C0907', code: '#0C0907', codeRing: '#3A3029' }
+};
+var OPS = [
+  ['remember', 'remember()', 'Save something with its source: an SLA, a claim, a reply, a lesson.'],
+  ['recall', 'recall()', 'Ask the memory. Each agent only gets the datasets it may read.'],
+  ['improve', 'improve()', 'Learn: review conflicts, distil a session, rewrite the claim skill.'],
+  ['forget', 'forget()', 'Drop what is done, like a paid claim, so nobody asks twice.']
+];
+var COG = {
+  promises: { calls: [['remember()', 'GitHub SLA → clawback_promises · as auditor'], ['remember()', 'Twilio SLA → clawback_promises · as auditor'], ['remember()', 'Cloudflare SLA → clawback_promises · as auditor']], why: 'Each promise is stored with the clause it came from, so every number in a claim traces back to the contract.' },
+  audit: { label: 'no memory call here', calls: [['GET', 'githubstatus.com/api/v2/incidents.json'], ['GET', 'status.twilio.com, cloudflarestatus.com']], why: 'Outages are live public data. Clawback applies the promise it remembered to the minutes it counted, and works out the credit.' },
+  claim: { calls: [['recall()', '“lessons about GitHub?” · playbook · as claims-writer'], ['recall()', 'GitHub SLA · promises'], ['remember()', 'the claim → clawback_claims, in a session'], ['entry', 'QA: how much does GitHub owe us?']], why: 'It checks the playbook before writing, so anything learned from earlier claims is used first.' },
+  pushback: { calls: [['remember()', 'their reply → clawback_claims'], ['improve()', 'review_conflicts · flags 1 conflict'], ['resolve()', 'your pick, with your reason'], ['remember()', 'the lesson → clawback_playbook']], why: 'Cognee keeps both stories with their sources and flags that they disagree. You decide, and the decision becomes a lesson.' },
+  molt: { calls: [['improve()', 'session_ids=[this claim] · distil what happened'], ['GET', '/proposals/{id} · the skill, before and after'], ['entry', 'skill_run, apply: true → claim-writer v2']], why: 'Feedback became a lesson; improve() turns the session into a better skill. The next claim is written by v2.' },
+  paid: { calls: [['forget()', 'the claim and its reply · clawback_claims'], ['remember()', 'a settled note → clawback_claims']], why: 'Forgetting is a feature: the paid claim leaves memory so nobody asks twice, and a short settled note stays.' },
+  handoff: { calls: [['recall()', 'open and settled credits · claims + promises'], ['recall()', 'lessons about each vendor · playbook']], why: 'The new agent has no history of its own. Everything it knows comes from these two recalls.' }
+};
+var LESSON_STATUS = 'For GitHub, link each incident on the status page with its start and resolve times, and quote the SLA clause.';
+var LESSON_VENDOR = 'GitHub only counts minutes above 5% errors. Ask for its per-minute error data before claiming.';
+
+function emailBody() {
+  var lines = INCIDENTS.map(function (r) { return '- ' + r[0] + ' UTC, ' + r[1] + ' min, ' + r[3] + ' (stspg.io/' + r[4] + ')'; });
+  return 'Hi GitHub team,\n\nWe’re requesting a service credit for GitHub Enterprise Cloud for Q4 2026 (October 1 to today).\n' +
+    'Your SLA promises 99.9% uptime a quarter, or 10% back at or below 99.9%.\n' +
+    'Your public status page shows 1,201.8 minutes of outage on GitHub Actions, for 99.09% uptime:\n' + lines.join('\n') +
+    '\n\nThat puts the credit at 10% of $6,300.00, so $630.00. The quarter isn’t over, so this is the minimum.\n' +
+    'Please apply it to our next invoice and confirm by reply.\n\nThanks';
+}
+function clock() { var d = new Date(); function p(n) { return (n < 10 ? '0' : '') + n; } return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); }
+function initial() { return { mode: 'checking', data: {}, elapsed: 0, error: null, theme: null, done: {}, open: {}, busy: null, drafted: false, sent: false, replied: false, pick: null, winner: null, incidentsOpen: false, tape: [], counts: { promises: 0, claims: 0, playbook: 0 }, bumped: {}, perms: null, answer: null, answerKey: 0, recoveredKey: 0 }; }
+
+var API = '/api/py', AGENT_NAMES = { 'auditor': 'Auditor', 'claims-writer': 'Claims Writer', 'inbox-assistant': 'Inbox Assistant' };
+function apiCall(method, path, body) {
+  return fetch(API + path, { method: method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).then(function (r) {
+    return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var d = j && j.detail; throw new Error((d && (d.message || d)) || ('HTTP ' + r.status)); } return j; });
+  });
+}
+function hhmmss(iso) { var d = iso ? new Date(iso) : new Date(); function p(n) { return (n < 10 ? '0' : '') + n; } return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); }
+function tapeRow(ev) { var denied = ev.ok === false && /denied|403/i.test(ev.summary || ''); return { id: ev.id, at: hhmmss(ev.at), op: denied ? 'denied' : ev.op, agent: AGENT_NAMES[(ev.detail || {}).agent] || (ev.detail || {}).agent || 'Clawback', dataset: (ev.dataset || '').replace(/clawback_/g, ''), summary: ev.summary || '', ms: ev.ms || 0, ok: ev.ok !== false }; }
+function fmtMin(m) { return (Math.round(m * 10) / 10).toLocaleString('en-US'); }
+function money(n) { return '$' + Math.round(n || 0).toLocaleString('en-US'); }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = initial(); this.timers = []; this.seq = 0; this.reason = ''; this.li = {}; this.liRef = {};
+    STEPS.forEach((id) => { this.liRef[id] = (el) => { this.li[id] = el; }; });
+    this.setReason = (el) => { this.reasonEl = el; };
+    this.setAsk = (el) => { this.askEl = el; };
+    this.onReason = (e) => { this.reason = e && e.target ? e.target.value : this.reason; };
+    this.onAskKey = (e) => { if (e && e.key === 'Enter') this.ask(); };
+    this.ask = () => this.runAsk();
+  }
+  componentDidMount() {
+    this.still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { var saved = window.localStorage.getItem('clawback-theme'); if (saved) this.setState({ theme: saved }); } catch (err) {}
+    this.onTheme = (e) => { if (e && e.detail) this.setState({ theme: e.detail }); };
+    window.addEventListener('clawback-theme', this.onTheme);
+    // live when the API answers and Cognee is connected; otherwise replay the recorded live run
+    var forceDemo = /[?&]demo=1/.test(window.location.search || '');
+    if (forceDemo) { this.setState({ mode: 'recorded' }); return; }
+    var forceLive = /[?&]live=1/.test(window.location.search || '');
+    var done = false, fail = () => { if (!done) { done = true; this.setState({ mode: 'recorded' }); } };
+    setTimeout(fail, 5000);
+    apiCall('GET', '/health').then((h) => { if (done) return; done = true; var on = h && (h.cognee === 'connected' || forceLive); this.setState({ mode: on ? 'live' : 'recorded', health: h }); if (on) this.refreshTape(); }).catch(fail);
+  }
+  live() { return this.state.mode === 'live'; }
+  // a live step: busy with a running clock (Cognee calls can take a minute or two), then the real result
+  step(id, work, after) {
+    if (this.state.busy) return;
+    var t0 = Date.now(); this.setState({ busy: id, elapsed: 0, error: null });
+    var tick = setInterval(() => this.setState({ elapsed: Math.round((Date.now() - t0) / 1000) }), 1000);
+    work().then((res) => {
+      clearInterval(tick);
+      var patch = after(res) || {}; this.setState(Object.assign({ busy: null }, patch));
+      this.refreshTape();
+      var next = STEPS[STEPS.indexOf(this.state.reveal) + 1];
+      if (this.state.reveal && next) setTimeout(() => { var el = this.li[next]; if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); this.setState({ reveal: null }); }, 150);
+    }).catch((err) => { clearInterval(tick); this.setState({ busy: null, error: String(err && err.message || err) }); });
+  }
+  refreshTape() {
+    return apiCall('GET', '/memory?limit=60').then((evs) => {
+      var rows = (evs || []).map(tapeRow), counts = { promises: 0, claims: 0, playbook: 0 };
+      (evs || []).slice().reverse().forEach(function (ev) { if (ev.ok === false) return; (ev.dataset || '').split(',').forEach(function (ds) { var k = ds.trim().replace('clawback_', ''); if (!(k in counts)) return; if (ev.op === 'remember') counts[k]++; if (ev.op === 'forget') counts[k] = Math.max(0, counts[k] - 2); }); });
+      this.setState({ tape: rows, counts: counts });
+    }).catch(function () {});
+  }
+  data(patch) { return { data: Object.assign({}, this.state.data, patch) }; }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); if (this.onTheme) window.removeEventListener('clawback-theme', this.onTheme); }
+  later(ms, fn) { var f = this.props.speed === 'fast' ? 0.35 : 1, t = setTimeout(() => { this.timers = this.timers.filter(x => x !== t); fn(); }, this.still ? 0 : ms * f); this.timers.push(t); }
+  push(e) {
+    var row = Object.assign({ id: 'm' + (++this.seq), at: clock() }, e), c = Object.assign({}, this.state.counts), bumped = Object.assign({}, this.state.bumped);
+    if (e.delta) Object.keys(e.delta).forEach(function (k) { c[k] = Math.max(0, c[k] + e.delta[k]); bumped[k] = (bumped[k] || 0) + 1; });
+    this.setState({ tape: [row].concat(this.state.tape).slice(0, 80), counts: c, bumped: bumped });
+  }
+  // one step: busy for a beat, apply the change, then the memory calls land on the tape one by one
+  run(id, ms, patch, events) {
+    if (this.state.busy) return;
+    this.setState({ busy: id });
+    this.later(ms, () => {
+      this.setState(Object.assign({ busy: null }, typeof patch === 'function' ? patch(this.state) : patch));
+      (events || []).forEach((e, i) => this.later(140 * i, () => this.push(e)));
+      var next = STEPS[STEPS.indexOf(this.state.reveal) + 1];
+      if (this.state.reveal && next) this.later(120, () => { var el = this.li[next]; if (el && el.scrollIntoView) el.scrollIntoView({ behavior: this.still ? 'auto' : 'smooth', block: 'nearest' }); this.setState({ reveal: null }); });
+    });
+  }
+  mark(id, extra) { var s = this.state, d = Object.assign({}, s.done), o = {}; d[id] = true; o[id] = true; return Object.assign({ done: d, open: o, reveal: id }, extra || {}); }
+  seed() {
+    if (this.live()) return this.step('seed', () => apiCall('POST', '/seed'), () => this.mark('promises'));
+    this.run('seed', 900, this.mark('promises'), VENDORS.map(function (v) { return { op: 'remember', agent: 'Auditor', dataset: 'promises', summary: v.name + ' SLA: ' + v.promise, ms: 700 + v.name.length * 23, delta: { promises: 1 } }; }));
+  }
+  audit() {
+    if (this.live()) return this.step('audit', () => Promise.all(['github', 'twilio', 'cloudflare'].map((v) => apiCall('POST', '/audit', { vendorId: v }))), (res) => Object.assign(this.mark('audit'), this.data({ audits: { github: res[0], twilio: res[1], cloudflare: res[2] } })));
+    this.run('audit', 1300, this.mark('audit'));
+  }
+  draft() {
+    if (this.live()) return this.step('draft', () => apiCall('POST', '/claims', { auditId: this.state.data.audits.github.id }), (claim) => Object.assign({ drafted: true }, this.data({ claim: claim })));
+    this.run('draft', 1500, { drafted: true }, [
+      { op: 'recall', agent: 'Claims Writer', dataset: 'playbook', summary: 'Lessons about GitHub: none yet', ms: 340 },
+      { op: 'recall', agent: 'Claims Writer', dataset: 'promises', summary: 'GitHub SLA: 1 found', ms: 291 },
+      { op: 'remember', agent: 'Claims Writer', dataset: 'claims', summary: 'Claim: GitHub Q4 2026, $630, 12 incidents', ms: 905, delta: { claims: 1 } },
+      { op: 'entry', agent: 'Claims Writer', dataset: 'claims', summary: 'QA: how much does GitHub owe us?', ms: 118 }
+    ]);
+  }
+  send() {
+    if (this.live()) return this.step('send', () => apiCall('POST', '/claims/' + this.state.data.claim.id + '/send'), (claim) => Object.assign(this.mark('claim', { sent: true }), this.data({ claim: claim })));
+    this.run('send', 800, (s) => this.mark('claim', { sent: true }));
+  }
+  reply() {
+    if (this.live()) return this.step('reply', () => apiCall('GET', '/inbox?vendor_id=github').then((mail) => { var m = (mail && mail[0]) || {}; return apiCall('POST', '/claims/' + this.state.data.claim.id + '/reply', { text: m.text || 'Our records show only 45 minutes of qualifying downtime.', sender: m.from || 'GitHub Support' }); }), (claim) => Object.assign({ replied: true }, this.data({ claim: claim })));
+    this.run('reply', 1500, { replied: true }, [
+      { op: 'remember', agent: 'Claims Writer', dataset: 'claims', summary: 'GitHub Support: “only 45 minutes”', ms: 760, delta: { claims: 1 } },
+      { op: 'improve', agent: 'Claims Writer', dataset: 'claims', summary: 'Conflict review: two answers disagree', ms: 1420 },
+      { op: 'conflicts', agent: 'Claims Writer', dataset: 'claims', summary: '1 open conflict', ms: 104 }
+    ]);
+  }
+  pick(id) { if (this.state.winner) return; this.setState({ pick: id }); }
+  resolve() {
+    var s = this.state; if (!s.pick) return;
+    if (this.live()) {
+      var facts = (s.data.claim && s.data.claim.conflict && s.data.claim.conflict.facts) || [], chosen = facts.filter(function (f) { return f.id === s.pick; })[0], kind = chosen && chosen.source && chosen.source.kind === 'vendor_reply' ? 'vendor_reply' : 'status_page';
+      var reason = this.reason || 'Their own status page lists every incident with start and end times. The SLA counts those minutes.';
+      return this.step('resolve', () => apiCall('POST', '/claims/' + s.data.claim.id + '/resolve', { selectedFactId: s.pick, reason: reason }), (claim) => { this.loadProposal(claim.id); return Object.assign(this.mark('pushback', { winner: kind }), this.data({ claim: claim })); });
+    }
+    var status = s.pick === 'status_page';
+    this.run('resolve', 1300, this.mark('pushback', { winner: s.pick }), [
+      { op: 'resolve', agent: 'Claims Writer', dataset: 'claims', summary: status ? 'Kept: the GitHub status page' : 'Kept: GitHub Support’s number', ms: 176 },
+      { op: 'remember', agent: 'Claims Writer', dataset: 'playbook', summary: 'Lesson for GitHub', ms: 688, delta: { playbook: 1 } },
+      { op: 'entry', agent: 'Claims Writer', dataset: 'claims', summary: status ? 'Feedback +1 on the claim' : 'Feedback -1 on the claim', ms: 92 },
+      { op: 'improve', agent: 'Claims Writer', dataset: 'claims', summary: 'Session distilled, skill proposal ready', ms: 1876 }
+    ]);
+  }
+  loadProposal(id) { apiCall('GET', '/claims/' + id + '/proposal').then((p) => this.setState(this.data({ proposal: p }))).catch(() => {}); }
+  apply() {
+    if (this.live()) return this.step('apply', () => apiCall('POST', '/claims/' + this.state.data.claim.id + '/proposal/apply'), (r) => Object.assign(this.mark('molt'), this.data({ applied: r })));
+    this.run('apply', 1000, this.mark('molt'), [{ op: 'entry', agent: 'Claims Writer', dataset: 'playbook', summary: 'skill_run: apply claim-writer v2', ms: 141 }]);
+  }
+  markPaid() {
+    var won = this.state.winner === 'status_page';
+    if (this.live()) return this.step('paid', () => apiCall('POST', '/claims/' + this.state.data.claim.id + '/paid'), (claim) => Object.assign(this.mark('paid', { recoveredKey: this.state.recoveredKey + 1 }), this.data({ claim: claim })));
+    this.run('paid', 1100, (s) => this.mark('paid', { recoveredKey: s.recoveredKey + 1 }), [
+      { op: 'forget', agent: 'Claims Writer', dataset: 'claims', summary: 'Claim GitHub Q4 2026, its reply and session', ms: 431, delta: { claims: -2 } },
+      { op: 'remember', agent: 'Claims Writer', dataset: 'claims', summary: won ? 'Settled: GitHub paid $630 for Q4 2026' : 'Closed: GitHub Q4 2026, $0', ms: 642, delta: { claims: 1 } }
+    ]);
+  }
+  handoff() {
+    if (this.live()) return this.step('handoff', () => apiCall('POST', '/handoff'), (b) => Object.assign(this.mark('handoff'), this.data({ briefing: b })));
+    this.run('handoff', 1400, this.mark('handoff'), [
+      { op: 'recall', agent: 'New agent', dataset: 'claims, promises', summary: 'Open or settled credits: 4 found', ms: 522 },
+      { op: 'recall', agent: 'New agent', dataset: 'playbook', summary: 'Lessons about each vendor: 1 found', ms: 409 }
+    ]);
+  }
+  testPerms() {
+    var s = this.state, events = [];
+    if (this.live()) return this.step('perms', () => apiCall('GET', '/agents/permissions'), (rows) => Object.assign({ perms: (s.perms || 0) + 1 }, this.data({ perms: rows })));
+    AGENTS.forEach(function (a) { DATASETS.forEach(function (d, j) { var g = GRANTS[a][j], found = d === 'promises' ? s.counts.promises : d === 'claims' ? s.counts.claims : s.counts.playbook; events.push(g === 'denied' ? { op: 'denied', agent: a, dataset: d, summary: a + ' can’t read ' + d, ms: 38, ok: false } : { op: 'recall', agent: a, dataset: d, summary: '“What do we know?” ' + found + ' found', ms: 180 + j * 40 }); }); });
+    this.run('perms', 600, { perms: this.seq + 1 }, events);
+  }
+  runAsk() {
+    var q = this.askEl && this.askEl.value ? this.askEl.value.trim() : 'What does GitHub owe us?', s = this.state, parts = [];
+    if (this.live()) { if (s.busy) return; this.setState({ answer: 'Asking Cognee\u2026', answerKey: s.answerKey + 1 }); apiCall('POST', '/ask', { question: q }).then((r) => { this.setState({ answer: (r && r.answer) || 'Nothing found.', answerKey: this.state.answerKey + 1 }); this.refreshTape(); }).catch((err) => this.setState({ answer: 'Could not reach memory: ' + err.message, answerKey: this.state.answerKey + 1 })); return; }
+    if (!s.counts.promises && !s.counts.claims) parts.push('Nothing in memory yet. Start with the promises.');
+    else {
+      if (s.done.paid) parts.push(s.winner === 'status_page' ? 'GitHub paid the $630 credit for Q4 2026. Don’t claim it again.' : 'GitHub Q4 2026 is closed at $0.');
+      else if (s.drafted) parts.push('Open claim: GitHub owes $630 for Q4 2026 (1,201.8 min down on Actions). Claim by Jan 31.');
+      else parts.push('GitHub promises 99.9% a quarter, Twilio 99.95% a month, Cloudflare 100% a month.');
+      if (s.counts.playbook) parts.push(s.winner === 'vendor_reply' ? LESSON_VENDOR : LESSON_STATUS);
+    }
+    this.setState({ answer: parts.join(' '), answerKey: s.answerKey + 1 });
+    this.push({ op: 'recall', agent: 'You', dataset: 'what you can read', summary: '“' + q.slice(0, 60) + '”', ms: 310 });
+  }
+  renderVals() {
+    var self = this, s = this.state, accent = this.props.accent || '#FF6A1F', c = THEME[s.theme || this.props.theme || 'light'] || THEME.light;
+    var activeIdx = STEPS.findIndex(function (id) { return !s.done[id]; }); if (activeIdx < 0) activeIdx = STEPS.length;
+    var won = s.winner === 'status_page';
+    // live data from the API when we have it, the recorded run's numbers otherwise
+    var LIVE = s.mode === 'live', D = s.data || {}, A = D.audits || {}, G = A.github, claim = D.claim;
+    var ghInc = G ? (G.incidents || []).filter(function (x) { return x.counted && (!G.worstComponent || (x.components || []).indexOf(G.worstComponent) >= 0); }) : null;
+    var owedN = G ? G.owedUsd : 630, nInc = ghInc ? ghInc.length : 12;
+    var gh = G ? { uptime: G.uptimePct.toFixed(2) + '%', promise: 'promised ' + G.targetPct + '% a ' + G.window, minutesText: fmtMin(G.downtimeMinutes) + ' min across ' + nInc + ' incidents', owed: money(G.owedUsd), owedNote: 'owed, ' + G.creditPct + '% of ' + money(G.feeInWindowUsd) + '. Claim by ' + new Date(G.claimBy).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '.' } : { uptime: '99.09%', promise: 'promised 99.9% a quarter', minutesText: '1,201.8 min across 12 incidents', owed: '$630', owedNote: 'owed, 10% of $6,300. Claim by Jan 31.' };
+    var small = function (a, dflt) { return a ? { uptime: (Math.round(a.uptimePct * 100) / 100) + '%', note: a.breached ? money(a.owedUsd) + ' owed' : (a.incidents || []).length + ' incidents, none a major outage.' } : dflt; };
+    var tw = small(A.twilio, { uptime: '100%', note: '49 incidents, none a major outage.' }), cf = small(A.cloudflare, { uptime: '100%', note: '43 incidents, none a major outage.' });
+    var RESULT = {
+      promises: '3 in memory', audit: 'GitHub broke it. ' + money(owedN) + ' owed', claim: 'sent, ' + nInc + ' incidents cited',
+      pushback: won ? 'their status page wins' : 'their number wins', molt: 'claim-writer v2 is live',
+      paid: won ? money(owedN) + ' back, claim forgotten' : 'closed, claim forgotten', handoff: 'remembers everything'
+    };
+    var st = {};
+    STEPS.forEach(function (id, i) {
+      var done = !!s.done[id], active = i === activeIdx, locked = i > activeIdx;
+      st[id] = {
+        ref: self.liRef[id], open: active || (done && !!s.open[id]), opacity: locked ? 0.42 : 1, bg: active ? c.sheet : 'transparent', cursor: done ? 'pointer' : 'default',
+        nameColor: done ? accent : active ? c.ink : c.faint, result: done ? RESULT[id] : '',
+        toggle: function () { if (!done) return; var o = Object.assign({}, self.state.open); o[id] = !o[id]; self.setState({ open: o }); }
+      };
+    });
+    function btn(id, label, busyLabel, fn, enabled, hideWhenDone) {
+      var busy = s.busy === id, on = enabled && !s.busy;
+      return { label: busy ? busyLabel + (LIVE && s.elapsed ? ' ' + s.elapsed + 's' : '') : label, onClick: function () { if (on) fn.call(self); }, opacity: on || busy ? 1 : 0.4, display: hideWhenDone ? 'none' : 'inline-flex' };
+    }
+    var b = {
+      seed: btn('seed', 'Remember the promises', 'Remembering…', this.seed, !s.done.promises, s.done.promises),
+      audit: btn('audit', 'Check the status pages', 'Reading three status pages…', this.audit, s.done.promises && !s.done.audit),
+      draft: btn('draft', 'Write the claim', 'Recalling, then writing…', this.draft, s.done.audit && !s.drafted),
+      send: btn('send', 'Send to GitHub', 'Sending…', this.send, s.drafted && !s.sent, s.sent),
+      reply: btn('reply', 'Read it into memory', 'Remembering, reviewing…', this.reply, s.sent && !s.replied),
+      resolve: btn('resolve', 'Resolve', 'Resolving, learning…', this.resolve, s.replied && !!s.pick && !s.winner),
+      apply: btn('apply', 'Apply v2', 'Applying…', this.apply, !!s.winner && !s.done.molt, s.done.molt),
+      paid: btn('paid', won ? 'GitHub paid. Mark it' : 'Close the claim', 'Forgetting…', this.markPaid, s.done.molt && !s.done.paid),
+      handoff: btn('handoff', 'Kill the agent', 'Starting a new one…', this.handoff, s.done.paid && !s.done.handoff),
+      perms: btn('perms', s.perms ? 'Test again' : 'Test them', 'Testing…', this.testPerms, true)
+    };
+    var max = 270;
+    var tested = !!s.perms, permCells = [];
+    AGENTS.forEach(function (a) {
+      permCells.push({ key: a, text: a, pad: '0', font: "'Geist', sans-serif", size: '13px', color: '#F5EEE2', bg: 'transparent', anim: 'none' });
+      GRANTS[a].forEach(function (g, j) {
+        var denied = g === 'denied';
+        if (LIVE && D.perms) { var key = { 'Auditor': 'auditor', 'Claims Writer': 'claims-writer', 'Inbox Assistant': 'inbox-assistant' }[a], row = D.perms.filter(function (r) { return r.agent === key && r.dataset === 'clawback_' + DATASETS[j]; })[0]; if (row) { denied = !row.allowed; g = row.allowed ? g : row.deniedBy === 'cognee' ? '403 denied' : 'error'; } }
+        permCells.push({ key: a + j + (tested ? s.perms : 0), text: g, pad: '6px 6px', font: "'Geist Mono', monospace", size: '11px', color: denied ? '#F5EEE2' : '#F5EEE2', bg: denied ? '#C4321F' : 'rgba(245,238,226,.08)', anim: tested ? 'lvPing 700ms cubic-bezier(.22,1,.36,1) ' + (j * 90) + 'ms' : 'none' });
+      });
+    });
+    var liveFacts = LIVE && claim && claim.conflict && claim.conflict.facts ? claim.conflict.facts.map(function (f) { var kind = f.source && f.source.kind === 'vendor_reply' ? 'vendor_reply' : 'status_page', m = String(f.text || '').match(/[\d,.]+/); return { id: f.id, kind: kind, value: m ? m[0] + ' min' : '', text: f.text, source: (f.source && f.source.title) || kind }; }) : null;
+    var facts = (liveFacts || [
+      { id: 'status_page', kind: 'status_page', value: '1,201.8 min', text: '12 incidents on GitHub Actions this quarter', source: 'GitHub’s own status page, every incident linked' },
+      { id: 'vendor_reply', kind: 'vendor_reply', value: '45 min', text: 'Only minutes above 5% errors count', source: 'Reply from GitHub Support (sample)' }
+    ]).map(function (f, i) {
+      var chosen = s.winner ? s.winner === f.kind : s.pick === f.id;
+      return Object.assign(f, { pick: function () { self.pick(f.id); }, pressed: chosen ? 'true' : 'false', cursor: s.winner ? 'default' : 'pointer', delay: i * 80, valueColor: f.kind === 'vendor_reply' ? '#C4321F' : c.ink, ring: chosen ? 'inset 0 0 0 2px ' + accent : 'inset 0 0 0 1px ' + c.line });
+    });
+    var paidDone = !!s.done.paid;
+    return {
+      accent: accent, c: c, themeNext: (s.theme || this.props.theme || 'light') === 'dark' ? 'Light' : 'Dark',
+      toggleTheme: function () { var t = (self.state.theme || self.props.theme || 'light') === 'dark' ? 'light' : 'dark'; self.setState({ theme: t }); try { window.localStorage.setItem('clawback-theme', t); window.dispatchEvent(new CustomEvent('clawback-theme', { detail: t })); } catch (err) {} },
+      ops: OPS.map(function (o) { var n = s.tape.filter(function (t) { return t.op === o[0]; }).length, last = s.tape.length && s.tape[0].op === o[0]; return { name: o[1], what: o[2], n: n, key: o[0] + n, anim: n ? 'lvIn 260ms cubic-bezier(.22,1,.36,1) both' : 'none', ring: last ? '0 0 0 2px ' + accent : 'inset 0 0 0 1px ' + c.line }; }),
+      cog: (function () { var out = {}; STEPS.forEach(function (id, i) { var done = !!s.done[id], live = s.busy && ({ seed: 'promises', audit: 'audit', draft: 'claim', send: 'claim', reply: 'pushback', resolve: 'pushback', apply: 'molt', paid: 'paid', handoff: 'handoff' })[s.busy] === id; out[id] = { label: COG[id].label || 'what Cognee does here', state: done ? 'done' : live ? 'running\u2026' : 'next', why: COG[id].why, calls: COG[id].calls.map(function (k) { return { op: k[0], args: k[1], o: done || live ? 1 : 0.7, color: k[0] === 'GET' || k[0] === 'entry' ? '#A9C2F0' : accent }; }) }; }); return out; })(),
+      loop: [['your pick', !!s.winner], ['lesson saved', !!s.winner], ['improve()', !!s.winner], ['claim-writer v2', !!s.done.molt]].map(function (x, i, arr) { return { t: x[0], bg: x[1] ? accent : 'transparent', color: x[1] ? '#22170F' : c.muted, ring: x[1] ? accent : c.line, arrow: i < arr.length - 1 ? 'inline' : 'none' }; }),
+      statusLabel: LIVE ? ((s.health && s.health.statusPages) || 'live') : 'snapshot, Nov 16', memoryLabel: s.mode === 'checking' ? 'connecting\u2026' : LIVE ? ((s.health && s.health.cognee === 'connected') ? 'Cognee, live' : 'offline fallback') : 'recorded live run',
+      notice: s.error ? { on: true, bg: 'rgba(196,50,31,.12)', color: '#C4321F', text: 'That call failed: ' + s.error + '. Try the step again, or add ?demo=1 to replay the recorded run.' } : s.mode === 'recorded' ? { on: true, bg: c.sheet, color: c.muted, text: 'Replaying a recorded live run against Cognee' + (s.health ? (s.health.cognee === 'connected' ? '' : ' (Cognee is not connected on this server yet)') : /[?&]demo=1/.test(window.location.search || '') ? '' : ' (the API is not reachable from here)') + '. Every number and memory call in it came from Cognee.' } : LIVE && s.busy && ['reply', 'resolve', 'apply', 'draft', 'handoff'].indexOf(s.busy) >= 0 ? { on: true, bg: c.sheet, color: c.muted, text: 'Live call to Cognee in progress. Conflict review and self-improvement can take 30 seconds to 2 minutes.' } : { on: false, bg: 'transparent', color: c.muted, text: '' },
+      gh: gh, tw: tw, cf: cf,
+      emailSubject: LIVE && claim && claim.email ? claim.email.subject : 'Service credit request: GitHub Enterprise Cloud, Q4 2026',
+      skill: LIVE && D.proposal && (D.proposal.proposed_procedure || D.proposal.proposedProcedure) ? { live: true, notLive: false, v1: D.proposal.old_procedure || D.proposal.oldProcedure || '', v2: D.proposal.proposed_procedure || D.proposal.proposedProcedure, why: 'proposed by Cognee' + (D.proposal.confidence ? ', confidence ' + D.proposal.confidence : '') + (D.proposal.rationale ? ': ' + D.proposal.rationale : '') } : { live: false, notLive: true, v1: 'Name the SLA and quote the promise. List each counted incident with its date, minutes and status-page link. State the credit and the amount. Check the playbook first.', v2: '', why: '' },
+      reset: function () { self.timers.forEach(clearTimeout); self.timers = []; var keep = self.state.theme, mode = self.state.mode, health = self.state.health; if (mode === 'live') apiCall('POST', '/reset').then(function () { self.refreshTape(); }).catch(function () {}); self.setState(Object.assign(initial(), { theme: keep, mode: mode, health: health })); },
+      recoveredText: paidDone && won ? money(owedN) : '$0', recoveredColor: paidDone && won ? accent : c.faint, recoveredKey: 'r' + s.recoveredKey,
+      recoveredAnim: paidDone && won ? 'lvSlam 900ms cubic-bezier(.34,1.56,.64,1) both' : 'none',
+      recoveredNote: paidDone ? (won ? 'recovered from GitHub' : 'recovered, claim closed') : s.done.audit ? 'recovered of ' + money(owedN) + ' owed' : 'recovered so far',
+      st: st, b: b,
+      vendors: VENDORS.map(function (v) { return Object.assign({}, v, { state: s.done.promises ? 'in memory' : '', stateColor: accent }); }),
+      audited: !!s.done.audit, notAudited: !s.done.audit,
+      bars: (ghInc ? ghInc.slice().reverse().map(function (x) { return [0, x.minutesInWindow]; }) : INCIDENTS).map(function (r, i, arr) { var mx = Math.max.apply(null, arr.map(function (q) { return q[1]; })) || max; return { h: Math.max(3, Math.round(r[1] / mx * 56)), delay: i * 45 }; }),
+      incidentsOpen: s.incidentsOpen, incidentsLabel: s.incidentsOpen ? 'Hide the incidents' : 'Show the ' + nInc + ' incidents',
+      toggleIncidents: function () { self.setState({ incidentsOpen: !self.state.incidentsOpen }); },
+      incidents: (ghInc ? ghInc.slice().reverse().map(function (x) { var d = new Date(x.startedAt); return [d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toISOString().slice(11, 16), x.minutesInWindow, x.impact, x.name, (x.url || '').replace('https://stspg.io/', '')]; }) : INCIDENTS).map(function (r, i) { return { date: r[0], min: r[1].toFixed(1), impact: r[2], impactColor: r[2] === 'critical' ? '#C4321F' : c.muted, name: r[3], url: 'https://stspg.io/' + r[4], border: i ? '1px solid ' + c.line : '0' }; }),
+      drafted: s.drafted, notDrafted: !s.drafted, emailBody: LIVE && claim && claim.email ? claim.email.body : emailBody(),
+      recallNote: 'recalled: GitHub SLA from promises, 0 lessons from the playbook',
+      sentNote: s.sent ? 'sent to GitHub Support, Nov 16' : 'nothing is sent until you press it', sentColor: s.sent ? accent : c.faint,
+      replied: s.replied, notReplied: !s.replied, facts: facts,
+      notResolved: !s.winner, resolved: !!s.winner,
+      resolveHint: s.pick ? 'resolve() in Cognee, then the lesson goes to the playbook' : 'pick one first',
+      outcome: won ? 'Their status page wins. The rebuttal goes back with every incident linked.' : 'You took their number. 45 minutes is under the 132 a 99.9% quarter allows, so nothing is owed.',
+      lesson: LIVE && claim && claim.lessons && claim.lessons.length ? claim.lessons[claim.lessons.length - 1] : won ? LESSON_STATUS : LESSON_VENDOR,
+      v2Lines: LIVE && D.proposal && (D.proposal.proposed_procedure || D.proposal.proposedProcedure) ? [] : won ? ['Link every incident to its status-page entry with its start and resolve times.', 'Quote the SLA clause word for word.'] : ['Ask the vendor for its per-minute error data before claiming.', 'Use the vendor’s own definition of downtime.'],
+      v2Ring: s.done.molt ? accent : c.line,
+      applyNote: s.done.molt ? 'v2 is live. The next claim starts from it.' : 'a skill_run entry with apply: true', applyColor: s.done.molt ? accent : c.faint,
+      paidTitle: won || !s.winner ? 'Get paid. Then forget the claim' : 'Close it. Then forget the claim',
+      paidIntro: won || !s.winner ? 'When the ' + money(owedN) + ' shows up on the invoice, mark it paid. The claim leaves memory so no agent asks twice.' : 'Nothing is owed, so close it. The claim leaves memory so no agent asks again.',
+      notPaid: !paidDone, paid: paidDone,
+      settledText: won ? 'Settled: GitHub paid the ' + money(owedN) + ' credit for Q4 2026. Do not claim this period again.' : 'Closed: GitHub Q4 2026, nothing owed. Do not claim this period again.',
+      notHanded: !s.done.handoff, handed: !!s.done.handoff,
+      briefing: (LIVE && D.briefing ? [
+        { k: 'recalled', v: String(D.briefing.summary || '').replace(/\*\*/g, '').replace(/^- /gm, '') || 'nothing yet' },
+        { k: 'lessons', v: (D.briefing.lessons || []).join(' ') || 'none yet' },
+        { k: 'agent', v: (D.briefing.agentId || 'new agent') + ', from ' + (D.briefing.recalledFrom || 'cognee') }
+      ] : [
+        { k: 'promises', v: 'GitHub 99.9% a quarter, Twilio 99.95% a month, Cloudflare 100% a month' },
+        { k: 'settled', v: won ? 'GitHub Q4 2026, $630 paid. Don’t claim again.' : 'GitHub Q4 2026, closed at $0' },
+        { k: 'lessons', v: won ? LESSON_STATUS : LESSON_VENDOR },
+        { k: 'skill', v: 'claim-writer v2' }
+      ]).map(function (r, i) { return Object.assign(r, { border: i ? '1px solid ' + c.line : '0', delay: 120 + i * 90 }); }),
+      datasets: DATASETS.map(function (d) { return { name: d, count: s.counts[d], key: d + (s.bumped[d] || 0), anim: s.bumped[d] ? 'lvPing 700ms cubic-bezier(.22,1,.36,1)' : 'none' }; }),
+      permCells: permCells,
+      tape: s.tape.map(function (t) {
+        var denied = t.ok === false;
+        return { id: t.id, at: t.at, op: t.op, summary: t.summary, meta: t.agent + ' · ' + t.dataset + ' · ' + t.ms + ' ms',
+          opColor: denied ? '#F5EEE2' : t.op === 'improve' ? accent : t.op === 'forget' ? c.faint : '#F5EEE2', opBg: denied ? '#C4321F' : 'transparent', opPad: denied ? '1px 6px' : '1px 0' };
+      }),
+      tapeEmpty: !s.tape.length, tapeCount: s.tape.length ? s.tape.length + ' calls' : '',
+      setReason: this.setReason, onReason: this.onReason, setAsk: this.setAsk, onAskKey: this.onAskKey, ask: this.ask,
+      hasAnswer: !!s.answer, answer: s.answer || '', answerKey: 'a' + s.answerKey
+    };
+  }
+}
+
+window.Component = Component;
+window.__dcMount();
+</script>
+</body>
+</html>
