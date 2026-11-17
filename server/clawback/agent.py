@@ -323,7 +323,8 @@ class Agent:
         run, _ = await self.memory.entry(
             {"type": "skill_run", "selected_skill_id": team.SKILL_NAME, "task_text": f"Claim a service credit from {claim.audit.vendor_name}",
              "result_summary": f"Vendor pushed back: {read.get('position', '')}. Lesson: {lesson}", "success_score": 0.4, "feedback": -1.0},
-            dataset=PLAYBOOK, agent=WRITER, session_id=claim.session_id,
+            dataset=PLAYBOOK, agent=WRITER, session_id=None,  # the claim's session lives in clawback_claims; a session bound
+            # to another dataset makes Cognee reject the entry (400 Invalid remember request). skill_run doesn't need one.
             skill_improvement={"skill_name": team.SKILL_NAME, "apply": False, "score_threshold": 0.9}, label="skill run scored 0.4 -> propose a rewrite",
         )
         proposal_id = find_proposal(run)
@@ -405,7 +406,8 @@ class Agent:
         result, ev = await self.memory.entry(
             {"type": "skill_run", "selected_skill_id": team.SKILL_NAME, "task_text": f"Claim a service credit from {claim.audit.vendor_name}",
              "result_summary": "Human approved the proposed rewrite.", "success_score": 0.4, "feedback": -1.0},
-            dataset=PLAYBOOK, agent=WRITER, session_id=claim.session_id,
+            dataset=PLAYBOOK, agent=WRITER, session_id=None,  # the claim's session lives in clawback_claims; a session bound
+            # to another dataset makes Cognee reject the entry (400 Invalid remember request). skill_run doesn't need one.
             skill_improvement={"skill_name": team.SKILL_NAME, "apply": True, "score_threshold": 0.9}, label="skill rewrite applied",
         )
         return {"ok": ev.ok, "result": result}
