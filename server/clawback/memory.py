@@ -197,12 +197,15 @@ class Memory:
             await self.store.set(OFFLINE_KEY, items)
             return [item_id], await self._log("remember", f"{title} -> {tier}", t0, True, agent=agent, dataset=name, session_id=session_id, detail={"tags": tags})
         ds_ids = await self.dataset_ids([dataset])
-        form: list[tuple[str, str]] = [("datasetId", ds_ids[0])] if ds_ids else [("datasetName", name)]
-        form += [("node_set", t) for t in tags]
+        # httpx wants form fields as a dict (a list of pairs is sent as a raw body and breaks AsyncClient).
+        # A list value sends the field once per item, which is how node_set takes several tags.
+        form: dict[str, Any] = {"datasetId": ds_ids[0]} if ds_ids else {"datasetName": name}
+        if tags:
+            form["node_set"] = list(tags)
         if session_id:
-            form.append(("session_id", session_id))
+            form["session_id"] = session_id
         if background:
-            form.append(("run_in_background", "true"))
+            form["run_in_background"] = "true"
         safe = re.sub(r"[^a-zA-Z0-9_-]+", "_", title)[:60] or "note"
         files = {"data": (f"{safe}.txt", text.encode("utf-8"), "text/plain")}
         try:
