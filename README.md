@@ -8,7 +8,7 @@
 
 🦀 **Founder Square · Agents After Dark** · UC Berkeley · Nov 16, 2026 · Nick + Darian
 
-[**Try it live**](https://clawback-two.vercel.app/live) · [Watch the demo](https://clawback-two.vercel.app/demo) · [Landing page](https://clawback-two.vercel.app) · [Spec](docs/MVP.md) · [API](docs/API.md)
+[**clawback-two.vercel.app**](https://clawback-two.vercel.app)
 
 <br>
 
