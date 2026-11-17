@@ -1,12 +1,12 @@
 {
  "health": {
   "ok": true,
-  "mode": "demo",
-  "cognee": "off",
-  "cogneeUrl": "",
+  "mode": "live",
+  "cognee": "connected",
+  "cogneeUrl": "https://tenant-04b37a9b-fd31-429e-8050-b837deab696d.aws.cognee.ai",
   "llm": "off",
   "store": "memory",
-  "statusPages": "snapshot",
+  "statusPages": "live",
   "vendors": 3
  },
  "vendors": [
@@ -137,144 +137,164 @@
   }
  ],
  "team": {
-  "datasets": {},
+  "datasets": {
+   "promises": "ca5e8eef-8d13-59e3-85d9-804b0b6cf4a6",
+   "claims": "2682601e-3cf5-570e-8449-58a22433e2b8",
+   "playbook": "cb089c47-8a05-5901-8d64-bf77ce7cc6ef"
+  },
   "agents": {
    "auditor": {
-    "id": "offline-auditor"
+    "id": "cc42d3b8-aef6-4b9d-97a6-ce61aa4d5ce5"
    },
    "claims-writer": {
-    "id": "offline-claims-writer"
+    "id": "a95fabfb-be93-4016-9b22-2dc28d6da38a"
    },
    "inbox-assistant": {
-    "id": "offline-inbox-assistant"
+    "id": "50da9e1a-5609-49ba-94cb-cb0684a66ff8"
    }
   },
   "grants": [
-   "auditor ['read', 'write'] clawback_promises",
-   "claims-writer ['read'] clawback_promises",
-   "claims-writer ['delete', 'read', 'write'] clawback_claims",
-   "claims-writer ['read', 'write'] clawback_playbook",
-   "inbox-assistant ['read'] clawback_promises",
-   "inbox-assistant ['read'] clawback_claims"
+   "auditor read clawback_promises",
+   "auditor write clawback_promises",
+   "claims-writer read clawback_promises",
+   "claims-writer delete clawback_claims",
+   "claims-writer read clawback_claims",
+   "claims-writer write clawback_claims",
+   "claims-writer read clawback_playbook",
+   "claims-writer write clawback_playbook",
+   "inbox-assistant read clawback_promises",
+   "inbox-assistant read clawback_claims"
   ],
   "skill": "claim-writer",
-  "target": "offline"
+  "target": "cognee"
  },
  "permissions": [
   {
    "agent": "auditor",
    "dataset": "clawback_promises",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "auditor",
    "dataset": "clawback_claims",
    "allowed": false,
+   "deniedBy": "cognee",
    "summary": "denied: auditor can't read clawback_claims"
   },
   {
    "agent": "auditor",
    "dataset": "clawback_playbook",
    "allowed": false,
+   "deniedBy": "cognee",
    "summary": "denied: auditor can't read clawback_playbook"
   },
   {
    "agent": "claims-writer",
    "dataset": "clawback_promises",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "claims-writer",
    "dataset": "clawback_claims",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "claims-writer",
    "dataset": "clawback_playbook",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "inbox-assistant",
    "dataset": "clawback_promises",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "inbox-assistant",
    "dataset": "clawback_claims",
    "allowed": true,
-   "summary": "\"What do we know?\" -> 0 memories"
+   "deniedBy": null,
+   "summary": "\"What do we know?\" -> 0 references"
   },
   {
    "agent": "inbox-assistant",
    "dataset": "clawback_playbook",
    "allowed": false,
+   "deniedBy": "cognee",
    "summary": "denied: inbox-assistant can't read clawback_playbook"
   }
  ],
  "seed": [
   {
-   "id": "519c73a7aca2",
-   "at": "2026-11-17T00:49:18.705385Z",
+   "id": "4107bb4a2b3b",
+   "at": "2026-11-17T01:44:33.741258Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "Cloudflare SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 934,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "cloudflare",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "e697778d9977",
-   "at": "2026-11-17T00:49:18.705535Z",
+   "id": "8af569f3f4fb",
+   "at": "2026-11-17T01:44:34.142162Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "GitHub SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 400,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "github",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "375c85dbdff9",
-   "at": "2026-11-17T00:49:18.705590Z",
+   "id": "5d6f12702c7c",
+   "at": "2026-11-17T01:44:34.572223Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "Twilio SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 429,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "twilio",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   }
  ],
  "audits": {
   "cloudflare": {
-   "id": "aud_fd83ff924c",
+   "id": "aud_8dac46522a",
    "vendorId": "cloudflare",
    "vendorName": "Cloudflare",
    "window": "month",
@@ -316,6 +336,22 @@
     "confidence": 1.0
    },
    "incidents": [
+    {
+     "id": "3l6q71x7a37k",
+     "name": "Network Performance Issues in Ashburn, US",
+     "impact": "minor",
+     "startedAt": "2026-11-17T00:41:03.939000Z",
+     "resolvedAt": null,
+     "minutes": 63.5,
+     "minutesInWindow": 63.5,
+     "components": [
+      "Ashburn, United States - (IAD)"
+     ],
+     "url": "https://www.cloudflarestatus.com/incidents/3l6q71x7a37k",
+     "status": "monitoring",
+     "counted": false,
+     "reason": "impact was minor, not an outage"
+    },
     {
      "id": "wscmdyvmpb5d",
      "name": "Network Performance Issues in Montreal, Canada",
@@ -659,8 +695,8 @@
      "impact": "minor",
      "startedAt": "2026-11-10T01:53:58.905000Z",
      "resolvedAt": null,
-     "minutes": 10015.3,
-     "minutesInWindow": 10015.3,
+     "minutes": 10070.6,
+     "minutesInWindow": 10070.6,
      "components": [
       "Workers",
       "Queues"
@@ -1014,14 +1050,14 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "",
    "byComponent": {},
-   "computedAt": "2026-11-17T00:49:18.709915Z"
+   "computedAt": "2026-11-17T01:44:34.769904Z"
   },
   "github": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -1786,7 +1822,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -1799,10 +1835,10 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "twilio": {
-   "id": "aud_741b509883",
+   "id": "aud_1ff8dbc3c7",
    "vendorId": "twilio",
    "vendorName": "Twilio",
    "window": "month",
@@ -1850,6 +1886,39 @@
     "confidence": 1.0
    },
    "incidents": [
+    {
+     "id": "f4rwmg49xxcg",
+     "name": "Gateway API (Lookup API) Failure Increase in Canada",
+     "impact": "minor",
+     "startedAt": "2026-11-16T17:44:01.542000-08:00",
+     "resolvedAt": null,
+     "minutes": 0.6,
+     "minutesInWindow": 0.6,
+     "components": [
+      "Lookup Identity Match",
+      "Legacy Identity MatchAndAttributes"
+     ],
+     "url": "https://stspg.io/h7mprlrghyfl",
+     "status": "investigating",
+     "counted": false,
+     "reason": "impact was minor, not an outage"
+    },
+    {
+     "id": "qfc5kd8grldv",
+     "name": "SMS Delivery Delays from a Subset of Twilio Short Codes to Liberty Mobile Puerto Rico",
+     "impact": "minor",
+     "startedAt": "2026-11-16T17:12:49.401000-08:00",
+     "resolvedAt": null,
+     "minutes": 31.8,
+     "minutesInWindow": 31.8,
+     "components": [
+      "SMS, Latin America"
+     ],
+     "url": "https://stspg.io/gdzn0chlbhb2",
+     "status": "identified",
+     "counted": false,
+     "reason": "impact was minor, not an outage"
+    },
     {
      "id": "skd3ybql5g5t",
      "name": "SMS Delivery Delays from a Subset of Twilio Short Codes to T-Mobile United States",
@@ -2112,8 +2181,8 @@
      "impact": "minor",
      "startedAt": "2026-11-13T14:36:52.566000-08:00",
      "resolvedAt": null,
-     "minutes": 4452.4,
-     "minutesInWindow": 4452.4,
+     "minutes": 4507.7,
+     "minutesInWindow": 4507.7,
      "components": [
       "SMS, Latin America"
      ],
@@ -2243,8 +2312,8 @@
      "impact": "minor",
      "startedAt": "2026-11-12T14:31:15.991000-08:00",
      "resolvedAt": null,
-     "minutes": 5898.0,
-     "minutesInWindow": 5898.0,
+     "minutes": 5953.3,
+     "minutesInWindow": 5953.3,
      "components": [
       "SMS, Latin America"
      ],
@@ -2309,8 +2378,8 @@
      "impact": "minor",
      "startedAt": "2026-11-12T08:53:51.382000-08:00",
      "resolvedAt": null,
-     "minutes": 6235.5,
-     "minutesInWindow": 6235.5,
+     "minutes": 6290.7,
+     "minutesInWindow": 6290.7,
      "components": [
       "Voice, Latin America"
      ],
@@ -2610,52 +2679,20 @@
      "status": "resolved",
      "counted": false,
      "reason": "impact was minor, not an outage"
-    },
-    {
-     "id": "7c7px61stky2",
-     "name": "SMS Delivery Receipt Delays from Twilio to Bouygues Telecom France",
-     "impact": "minor",
-     "startedAt": "2026-11-09T05:59:18.788000-08:00",
-     "resolvedAt": "2026-11-09T19:30:54.013000-08:00",
-     "minutes": 811.6,
-     "minutesInWindow": 811.6,
-     "components": [
-      "SMS, Europe"
-     ],
-     "url": "https://stspg.io/zwyxsmgwq72v",
-     "status": "resolved",
-     "counted": false,
-     "reason": "impact was minor, not an outage"
-    },
-    {
-     "id": "91slf66q53vx",
-     "name": "SMS Delivery Failures from Twilio to ETL Laos",
-     "impact": "minor",
-     "startedAt": "2026-11-08T22:57:09.375000-08:00",
-     "resolvedAt": "2026-11-09T15:05:39.324000-08:00",
-     "minutes": 968.5,
-     "minutesInWindow": 968.5,
-     "components": [
-      "SMS, APAC"
-     ],
-     "url": "https://stspg.io/bw4k4qvrtlqv",
-     "status": "resolved",
-     "counted": false,
-     "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "",
    "byComponent": {},
-   "computedAt": "2026-11-17T00:49:18.720339Z"
+   "computedAt": "2026-11-17T01:44:35.101963Z"
   }
  },
  "draft": {
-  "id": "clm_71e3215439",
+  "id": "clm_4ccebcf208",
   "vendorId": "github",
   "audit": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -3420,7 +3457,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -3433,7 +3470,7 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "status": "draft",
   "email": {
@@ -3508,18 +3545,16 @@
   ],
   "conflict": null,
   "lessons": [],
-  "memoryDataIds": [
-   "816c4fd4f65148d1acfcd0d030998be4"
-  ],
-  "sessionId": "claim-github-202610-8defe9",
-  "createdAt": "2026-11-17T00:49:18.723177Z",
-  "updatedAt": "2026-11-17T00:49:18.723213Z"
+  "memoryDataIds": [],
+  "sessionId": "claim-github-202610-3cbf18",
+  "createdAt": "2026-11-17T01:44:45.103349Z",
+  "updatedAt": "2026-11-17T01:44:46.010395Z"
  },
  "sent": {
-  "id": "clm_71e3215439",
+  "id": "clm_4ccebcf208",
   "vendorId": "github",
   "audit": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -4284,7 +4319,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -4297,7 +4332,7 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "status": "sent",
   "email": {
@@ -4372,18 +4407,16 @@
   ],
   "conflict": null,
   "lessons": [],
-  "memoryDataIds": [
-   "816c4fd4f65148d1acfcd0d030998be4"
-  ],
-  "sessionId": "claim-github-202610-8defe9",
-  "createdAt": "2026-11-17T00:49:18.723177Z",
-  "updatedAt": "2026-11-17T00:49:18.725785Z"
+  "memoryDataIds": [],
+  "sessionId": "claim-github-202610-3cbf18",
+  "createdAt": "2026-11-17T01:44:45.103349Z",
+  "updatedAt": "2026-11-17T01:44:46.015912Z"
  },
  "contested": {
-  "id": "clm_71e3215439",
+  "id": "clm_4ccebcf208",
   "vendorId": "github",
   "audit": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -5148,7 +5181,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -5161,7 +5194,7 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "status": "contested",
   "email": {
@@ -5235,7 +5268,7 @@
    }
   ],
   "conflict": {
-   "id": "cf_5ca3ea78ee",
+   "id": "cf_b597572674",
    "question": "How long was GitHub down in October 2026?",
    "facts": [
     {
@@ -5267,19 +5300,16 @@
    "fromCognee": false
   },
   "lessons": [],
-  "memoryDataIds": [
-   "816c4fd4f65148d1acfcd0d030998be4",
-   "492b469d2c3c45d9a31be86e863ee191"
-  ],
-  "sessionId": "claim-github-202610-8defe9",
-  "createdAt": "2026-11-17T00:49:18.723177Z",
-  "updatedAt": "2026-11-17T00:49:18.728374Z"
+  "memoryDataIds": [],
+  "sessionId": "claim-github-202610-3cbf18",
+  "createdAt": "2026-11-17T01:44:45.103349Z",
+  "updatedAt": "2026-11-17T01:44:48.606278Z"
  },
  "resolved": {
-  "id": "clm_71e3215439",
+  "id": "clm_4ccebcf208",
   "vendorId": "github",
   "audit": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -6044,7 +6074,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -6057,7 +6087,7 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "status": "sent",
   "email": {
@@ -6131,7 +6161,7 @@
    }
   ],
   "conflict": {
-   "id": "cf_5ca3ea78ee",
+   "id": "cf_b597572674",
    "question": "How long was GitHub down in October 2026?",
    "facts": [
     {
@@ -6165,35 +6195,67 @@
   "lessons": [
    "Attach each incident's status-page link with its start and resolve times, and quote the SLA clause."
   ],
-  "memoryDataIds": [
-   "816c4fd4f65148d1acfcd0d030998be4",
-   "492b469d2c3c45d9a31be86e863ee191"
-  ],
-  "sessionId": "claim-github-202610-8defe9",
-  "createdAt": "2026-11-17T00:49:18.723177Z",
-  "updatedAt": "2026-11-17T00:49:18.730678Z"
+  "memoryDataIds": [],
+  "sessionId": "claim-github-202610-3cbf18",
+  "createdAt": "2026-11-17T01:44:45.103349Z",
+  "updatedAt": "2026-11-17T01:45:12.567709Z"
  },
  "proposal": {
-  "proposalId": "prop_0206544e",
-  "offline": true
+  "proposal_id": "909aba79-c2f7-46b0-9775-7d42998913dc",
+  "skill_id": "dceed86e-a0e7-5ae9-acda-297b71e6a8ab",
+  "skill_name": "claim-writer",
+  "status": "proposed",
+  "confidence": 0.98,
+  "rationale": "Adds the repeatedly missed incident start and resolve times and an exact SLA-clause quote, while retaining the existing claim requirements and preventing unsupported details.",
+  "model_name": "litellm_proxy/litellm",
+  "old_procedure": "# Instructions\n\nWrite a short, firm, polite claim. Name the SLA and quote the promise. List each counted incident with its date,\nminutes and status-page link. State the credit percentage and the dollar amount. Ask for it on the next invoice.\nCheck the playbook for lessons about this vendor before writing, and apply every one.",
+  "proposed_procedure": "# claim-writer\n\n## Instructions\n\nWrite a short, firm, polite service-credit claim email to the vendor based on the audit.\n\n1. Check the vendor playbook and apply relevant lessons.\n2. Identify the applicable SLA and quote the exact clause and service-level promise. Do not paraphrase the quoted clause.\n3. List every incident included in the claim. For each, provide its date, start time, resolve time, counted minutes, status, and status-page link. Ensure the link is clearly associated with that incident.\n4. State the credit percentage and dollar amount, based on the audit and applicable SLA. Do not invent missing details or calculations; identify information that is missing or ambiguous instead.\n5. Ask the vendor to apply the credit to the next invoice.\n6. Keep the email specific to the audit, and verify that the clause, incident details, links, percentage, and amount are present and consistent before returning it.",
+  "runs_used": [
+   "c3cced65-f233-4f04-b932-6d158d5c3acc",
+   "2cf9c2d2-cbe6-4b81-bc8a-20b36acbac56",
+   "661862b3-7430-4d0d-8376-71adb844250d",
+   "d7f110f0-6c5f-45ba-92a0-946c22c232e0",
+   "af61e9de-08ac-41e6-82f4-9441e38753b4"
+  ],
+  "dataset_scope": [
+   "cb089c47-8a05-5901-8d64-bf77ce7cc6ef"
+  ]
  },
  "applied": {
   "ok": true,
   "result": {
-   "entry_id": "2224013eec26454b987d2f254a7d211f",
+   "status": "completed",
+   "dataset_name": "clawback_playbook",
+   "dataset_id": "cb089c47-8a05-5901-8d64-bf77ce7cc6ef",
+   "pipeline_run_id": null,
+   "items_processed": 1,
+   "elapsed_seconds": 5.580004653893411e-07,
    "items": [
     {
+     "kind": "skill_run",
+     "run_id": "7625a539-4dce-4181-b57d-b95684e7a3ca",
+     "selected_skill_id": "dceed86e-a0e7-5ae9-acda-297b71e6a8ab",
+     "selected_skill_name": "claim-writer",
+     "success_score": 0.4
+    },
+    {
      "kind": "skill_improvement_proposal",
-     "proposal_id": "prop_e4256317"
+     "proposal_id": "909aba79-c2f7-46b0-9775-7d42998913dc",
+     "skill_name": "claim-writer",
+     "status": "applied"
     }
-   ]
+   ],
+   "entry_type": "skill_run",
+   "entry_id": "7625a539-4dce-4181-b57d-b95684e7a3ca",
+   "via": "cognee_apply",
+   "proposalId": "909aba79-c2f7-46b0-9775-7d42998913dc"
   }
  },
  "paid": {
-  "id": "clm_71e3215439",
+  "id": "clm_4ccebcf208",
   "vendorId": "github",
   "audit": {
-   "id": "aud_e2394a68fd",
+   "id": "aud_bca02b131c",
    "vendorId": "github",
    "vendorName": "GitHub",
    "window": "quarter",
@@ -6958,7 +7020,7 @@
      "reason": "impact was minor, not an outage"
     }
    ],
-   "statusSource": "snapshot",
+   "statusSource": "live",
    "inProgress": true,
    "worstComponent": "Actions",
    "byComponent": {
@@ -6971,7 +7033,7 @@
     "Actions": 1201.8,
     "Packages": 0.0
    },
-   "computedAt": "2026-11-17T00:49:18.716115Z"
+   "computedAt": "2026-11-17T01:44:34.939462Z"
   },
   "status": "paid",
   "email": {
@@ -7045,7 +7107,7 @@
    }
   ],
   "conflict": {
-   "id": "cf_5ca3ea78ee",
+   "id": "cf_b597572674",
    "question": "How long was GitHub down in October 2026?",
    "facts": [
     {
@@ -7080,47 +7142,45 @@
    "Attach each incident's status-page link with its start and resolve times, and quote the SLA clause."
   ],
   "memoryDataIds": [],
-  "sessionId": "claim-github-202610-8defe9",
-  "createdAt": "2026-11-17T00:49:18.723177Z",
-  "updatedAt": "2026-11-17T00:49:18.735219Z"
+  "sessionId": "claim-github-202610-3cbf18",
+  "createdAt": "2026-11-17T01:44:45.103349Z",
+  "updatedAt": "2026-11-17T01:45:17.536288Z"
  },
  "handoff": {
-  "agentId": "agent_6bf06f39cd",
-  "recalledFrom": "offline",
-  "summary": "- Twilio SLA: Promise from Twilio (Twilio APIs): 99.95% uptime a month, or 10% back below 99.95%. The credit is a share of fees for the affected Twilio APIs that month. How to claim: Request through Twilio Customer Support within 30 d\n- Cloudflare SLA: Promise from Cloudflare (Cloudflare Business): 100% uptime a month, or 1x the fee for the share of time it was down. The credit is a share of the monthly service fee. How to claim: Tell Customer Support within 5 business\n- GitHub SLA: Promise from GitHub (GitHub Enterprise Cloud): 99.9% uptime a quarter, or 10% back at or below 99.9%, 25% back below 99%. The credit is a share of what you paid for the affected service that quarter. How to claim: Writte\n- Settled GitHub Oct 2026: Settled: GitHub paid the 630.00 USD credit for October 2026. Do not claim this period again.",
+  "agentId": "agent_b818015dbb",
+  "recalledFrom": "cognee",
+  "summary": "- **Open:** GitHub \u2014 **$630.00 USD** \u2014 2026-10-01 to 2027-01-01\n- **Settled:** GitHub \u2014 **$630.00 USD** \u2014 October 2026",
   "openClaims": [
-   "Twilio SLA: Promise from Twilio (Twilio APIs): 99.95% uptime a month, or 10% back below 99.95%. The credit is a share of fees for the affected Twilio APIs that month. How to claim: Request through Twilio Customer Support within 30 d",
-   "Cloudflare SLA: Promise from Cloudflare (Cloudflare Business): 100% uptime a month, or 1x the fee for the share of time it was down. The credit is a share of the monthly service fee. How to claim: Tell Customer Support within 5 business",
-   "GitHub SLA: Promise from GitHub (GitHub Enterprise Cloud): 99.9% uptime a quarter, or 10% back at or below 99.9%, 25% back below 99%. The credit is a share of what you paid for the affected service that quarter. How to claim: Writte",
-   "Settled GitHub Oct 2026: Settled: GitHub paid the 630.00 USD credit for October 2026. Do not claim this period again."
+   "**Open:** GitHub \u2014 **$630.00 USD** \u2014 2026-10-01 to 2027-01-01",
+   "**Settled:** GitHub \u2014 **$630.00 USD** \u2014 October 2026"
   ],
   "lessons": [
-   "Lesson: GitHub: Lesson for claiming from GitHub: Attach each incident's status-page link with its start and resolve times, and quote the SLA clause."
+   "GitHub: The context provides no information about how it disputes credit claims."
   ],
   "memory": [
    {
-    "id": "b88b93f9df90",
-    "at": "2026-11-17T00:49:18.736869Z",
+    "id": "43de7e913775",
+    "at": "2026-11-17T01:45:24.108860Z",
     "op": "recall",
-    "target": "offline",
-    "dataset": "clawback_claims,clawback_promises",
+    "target": "cognee",
+    "dataset": "clawback_claims",
     "sessionId": null,
-    "summary": "\"Which vendor credits are open or settled, how much is each, and \" -> 4 memories",
-    "ms": 0,
+    "summary": "\"List every claim and settlement: vendor, amount in USD, period, \" -> 0 references",
+    "ms": 6568,
     "ok": true,
     "detail": {
      "agent": "claims-writer"
     }
    },
    {
-    "id": "c23baedffd13",
-    "at": "2026-11-17T00:49:18.737088Z",
+    "id": "35ca74ee954f",
+    "at": "2026-11-17T01:45:29.359314Z",
     "op": "recall",
-    "target": "offline",
+    "target": "cognee",
     "dataset": "clawback_playbook",
     "sessionId": null,
-    "summary": "\"What lessons have we learned about how each vendor disputes cred\" -> 1 memories",
-    "ms": 0,
+    "summary": "\"List the lessons we have learned about how each vendor disputes \" -> 0 references",
+    "ms": 5250,
     "ok": true,
     "detail": {
      "agent": "claims-writer"
@@ -7130,437 +7190,477 @@
  },
  "memory": [
   {
-   "id": "c23baedffd13",
-   "at": "2026-11-17T00:49:18.737088Z",
+   "id": "35ca74ee954f",
+   "at": "2026-11-17T01:45:29.359314Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
    "sessionId": null,
-   "summary": "\"What lessons have we learned about how each vendor disputes cred\" -> 1 memories",
-   "ms": 0,
+   "summary": "\"List the lessons we have learned about how each vendor disputes \" -> 0 references",
+   "ms": 5250,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "b88b93f9df90",
-   "at": "2026-11-17T00:49:18.736869Z",
+   "id": "43de7e913775",
+   "at": "2026-11-17T01:45:24.108860Z",
    "op": "recall",
-   "target": "offline",
-   "dataset": "clawback_claims,clawback_promises",
+   "target": "cognee",
+   "dataset": "clawback_claims",
    "sessionId": null,
-   "summary": "\"Which vendor credits are open or settled, how much is each, and \" -> 4 memories",
-   "ms": 0,
+   "summary": "\"List every claim and settlement: vendor, amount in USD, period, \" -> 0 references",
+   "ms": 6568,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "b34dd6944c41",
-   "at": "2026-11-17T00:49:18.735204Z",
+   "id": "c435c774b6dc",
+   "at": "2026-11-17T01:45:17.536137Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
    "summary": "Settled GitHub Oct 2026 -> clawback_claims",
-   "ms": 0,
+   "ms": 418,
    "ok": true,
    "detail": {
     "agent": "claims-writer",
     "tags": [
      "github",
      "settled"
+    ],
+    "dataIds": []
+   }
+  },
+  {
+   "id": "f2fb8ddd885c",
+   "at": "2026-11-17T01:45:17.117807Z",
+   "op": "forget",
+   "target": "cognee",
+   "dataset": "clawback_claims",
+   "sessionId": null,
+   "summary": "0 item(s): GitHub credit paid",
+   "ms": 547,
+   "ok": true,
+   "detail": {
+    "agent": "claims-writer",
+    "errors": []
+   }
+  },
+  {
+   "id": "aceacb18529c",
+   "at": "2026-11-17T01:45:16.565900Z",
+   "op": "entry",
+   "target": "cognee",
+   "dataset": "clawback_playbook",
+   "sessionId": null,
+   "summary": "skill rewrite applied",
+   "ms": 2917,
+   "ok": true,
+   "detail": {
+    "agent": "claims-writer"
+   }
+  },
+  {
+   "id": "b8aebe50008e",
+   "at": "2026-11-17T01:45:12.567083Z",
+   "op": "improve",
+   "target": "cognee",
+   "dataset": "clawback_claims",
+   "sessionId": null,
+   "summary": "distil 1 session(s) into clawback_claims",
+   "ms": 15670,
+   "ok": true,
+   "detail": {
+    "agent": "claims-writer",
+    "stages": [
+     "{'stage': 'feedback_weights', 'status': 'skipped', 'reason': 'backend_unsupported', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'persist_session_qa', 'status': 'completed', 'reason': None, 'error': None, 'counts': {'sessions': 1}, 'duration_ms': 13625, 'run': {'status': 'PipelineRunCompleted', 'pipeline_run_id': 'd9b69843-ab13-42f0-95d8-ce4645f779fe', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': [{'run_info': {'status': 'PipelineRunCompleted', 'pipeline_run_id': 'd9b69843-ab13-42f0-95d8-ce4645f779fe', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': None}, 'data_id': None}], 'data_ids': []}}",
+     "{'stage': 'persist_agent_traces', 'status': 'already_completed', 'reason': 'no_new_trace_steps', 'error': None, 'counts': {}, 'duration_ms': 14, 'run': None}",
+     "{'stage': 'extract_agent_context', 'status': 'completed', 'reason': None, 'error': None, 'counts': {'lessons': 0, 'sessions_failed': 0}, 'duration_ms': 29, 'run': None}",
+     "{'stage': 'distill_sessions', 'status': 'completed', 'reason': None, 'error': None, 'counts': {'documents': 0, 'sessions_completed': 0, 'sessions_failed': 0, 'entries_uncurated': 0}, 'duration_ms': 79, 'run': None}",
+     "{'stage': 'update_user_preferences', 'status': 'completed', 'reason': 'no_changes', 'error': None, 'counts': {'turns_applied': 0, 'edges_written': 0, 'edges_pruned': 0, 'text_lines_added': 0}, 'duration_ms': 219, 'run': None}",
+     "{'stage': 'build_truth_subspace', 'status': 'skipped', 'reason': 'opt_in_disabled', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'review_conflicts', 'status': 'skipped', 'reason': 'turned_off', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'global_context_index', 'status': 'completed', 'reason': None, 'error': None, 'counts': {}, 'duration_ms': 1098, 'run': {'status': 'PipelineRunCompleted', 'pipeline_run_id': 'f28fe4ff-c21c-404e-b99a-42040ea71087', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': [{'run_info': {'status': 'PipelineRunCompleted', 'pipeline_run_id': 'f28fe4ff-c21c-404e-b99a-42040ea71087', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': None}, 'data_id': None}], 'data_ids': []}}"
     ]
    }
   },
   {
-   "id": "e261e6bd7354",
-   "at": "2026-11-17T00:49:18.735132Z",
-   "op": "forget",
-   "target": "offline",
-   "dataset": "clawback_claims",
-   "sessionId": null,
-   "summary": "2 item(s): GitHub credit paid",
-   "ms": 0,
-   "ok": true,
-   "detail": {
-    "agent": "claims-writer"
-   }
-  },
-  {
-   "id": "347350536bde",
-   "at": "2026-11-17T00:49:18.733806Z",
+   "id": "5113a98bbc7a",
+   "at": "2026-11-17T01:44:56.896842Z",
    "op": "entry",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
-   "sessionId": "claim-github-202610-8defe9",
-   "summary": "skill rewrite applied",
-   "ms": 0,
-   "ok": true,
-   "detail": {
-    "agent": "claims-writer"
-   }
-  },
-  {
-   "id": "43f51a5ae2ec",
-   "at": "2026-11-17T00:49:18.730490Z",
-   "op": "improve",
-   "target": "offline",
-   "dataset": "clawback_claims",
    "sessionId": null,
-   "summary": "distil 1 session(s) into clawback_claims",
-   "ms": 0,
-   "ok": true,
-   "detail": {
-    "agent": "claims-writer"
-   }
-  },
-  {
-   "id": "101c34e16bfe",
-   "at": "2026-11-17T00:49:18.730464Z",
-   "op": "entry",
-   "target": "offline",
-   "dataset": "clawback_playbook",
-   "sessionId": "claim-github-202610-8defe9",
    "summary": "skill run scored 0.4 -> propose a rewrite",
-   "ms": 0,
+   "ms": 6754,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "da22f7109469",
-   "at": "2026-11-17T00:49:18.730398Z",
+   "id": "e6a827619f00",
+   "at": "2026-11-17T01:44:50.141897Z",
    "op": "entry",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
-   "sessionId": "claim-github-202610-8defe9",
+   "sessionId": "claim-github-202610-3cbf18",
    "summary": "feedback +1 on the claim",
-   "ms": 0,
+   "ms": 581,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "a87688793a10",
-   "at": "2026-11-17T00:49:18.730355Z",
+   "id": "73df7bdba1cc",
+   "at": "2026-11-17T01:44:49.560034Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
    "sessionId": null,
    "summary": "Lesson: GitHub -> clawback_playbook",
-   "ms": 0,
+   "ms": 948,
    "ok": true,
    "detail": {
     "agent": "claims-writer",
     "tags": [
      "github",
      "lesson"
+    ],
+    "dataIds": []
+   }
+  },
+  {
+   "id": "f7d799fb0491",
+   "at": "2026-11-17T01:44:48.605858Z",
+   "op": "conflicts",
+   "target": "cognee",
+   "dataset": "clawback_claims",
+   "sessionId": null,
+   "summary": "0 unresolved conflict(s) in clawback_claims",
+   "ms": 515,
+   "ok": true,
+   "detail": {
+    "agent": "claims-writer"
+   }
+  },
+  {
+   "id": "9e5e262c6082",
+   "at": "2026-11-17T01:44:48.090328Z",
+   "op": "improve",
+   "target": "cognee",
+   "dataset": "clawback_claims",
+   "sessionId": null,
+   "summary": "enrich clawback_claims + conflict review",
+   "ms": 1109,
+   "ok": true,
+   "detail": {
+    "agent": "claims-writer",
+    "stages": [
+     "{'stage': 'feedback_weights', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'persist_session_qa', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'persist_agent_traces', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'extract_agent_context', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'distill_sessions', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'update_user_preferences', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'build_truth_subspace', 'status': 'skipped', 'reason': 'no_session_ids', 'error': None, 'counts': {}, 'duration_ms': 0, 'run': None}",
+     "{'stage': 'review_conflicts', 'status': 'already_completed', 'reason': 'no_new_facts', 'error': None, 'counts': {}, 'duration_ms': 119, 'run': None}",
+     "{'stage': 'global_context_index', 'status': 'completed', 'reason': None, 'error': None, 'counts': {}, 'duration_ms': 443, 'run': {'status': 'PipelineRunCompleted', 'pipeline_run_id': '42c80eb8-7703-410f-81db-9e0eb4f7ff7d', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': [{'run_info': {'status': 'PipelineRunCompleted', 'pipeline_run_id': '42c80eb8-7703-410f-81db-9e0eb4f7ff7d', 'dataset_id': '2682601e-3cf5-570e-8449-58a22433e2b8', 'dataset_name': 'clawback_claims', 'payload': None, 'data_ingestion_info': None}, 'data_id': None}], 'data_ids': []}}"
     ]
    }
   },
   {
-   "id": "7562cbe7b42d",
-   "at": "2026-11-17T00:49:18.728290Z",
-   "op": "conflicts",
-   "target": "offline",
-   "dataset": "clawback_claims",
-   "sessionId": null,
-   "summary": "offline: Clawback builds the conflict from the two sources",
-   "ms": 0,
-   "ok": true,
-   "detail": {
-    "agent": "claims-writer"
-   }
-  },
-  {
-   "id": "1295a7671c93",
-   "at": "2026-11-17T00:49:18.728264Z",
-   "op": "improve",
-   "target": "offline",
-   "dataset": "clawback_claims",
-   "sessionId": null,
-   "summary": "enrich clawback_claims + conflict review",
-   "ms": 0,
-   "ok": true,
-   "detail": {
-    "agent": "claims-writer"
-   }
-  },
-  {
-   "id": "2008acb0f080",
-   "at": "2026-11-17T00:49:18.728193Z",
+   "id": "e34f787e96d2",
+   "at": "2026-11-17T01:44:46.980528Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
    "summary": "GitHub reply to claim -> clawback_claims",
-   "ms": 0,
+   "ms": 960,
    "ok": true,
    "detail": {
     "agent": "claims-writer",
     "tags": [
      "github",
      "vendor_reply"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "80582e84d78b",
-   "at": "2026-11-17T00:49:18.723202Z",
+   "id": "7b7d38841c3e",
+   "at": "2026-11-17T01:44:46.010217Z",
    "op": "entry",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
-   "sessionId": "claim-github-202610-8defe9",
+   "sessionId": "claim-github-202610-3cbf18",
    "summary": "QA: how much does GitHub owe us?",
-   "ms": 0,
+   "ms": 906,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "931362692b45",
-   "at": "2026-11-17T00:49:18.723163Z",
+   "id": "bff0a0a64be2",
+   "at": "2026-11-17T01:44:45.103191Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
-   "sessionId": "claim-github-202610-8defe9",
-   "summary": "agent note -> session claim-github-202610-8defe9",
-   "ms": 0,
+   "sessionId": "claim-github-202610-3cbf18",
+   "summary": "agent note -> session claim-github-202610-3cbf18",
+   "ms": 509,
    "ok": true,
    "detail": {
     "agent": "claims-writer",
     "tags": [
      "github"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "c7b9acd9eb72",
-   "at": "2026-11-17T00:49:18.723135Z",
+   "id": "451726862526",
+   "at": "2026-11-17T01:44:44.593968Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
    "summary": "Claim GitHub Oct 2026 -> clawback_claims",
-   "ms": 0,
+   "ms": 491,
    "ok": true,
    "detail": {
     "agent": "claims-writer",
     "tags": [
      "github",
      "claim"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "5fa38836423e",
-   "at": "2026-11-17T00:49:18.722864Z",
+   "id": "ceebb8c2aa75",
+   "at": "2026-11-17T01:44:44.101497Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook,clawback_promises",
-   "sessionId": "claim-github-202610-8defe9",
-   "summary": "\"What have we learned about claiming service credits from GitHub?\" -> 3 memories",
-   "ms": 0,
+   "sessionId": null,
+   "summary": "\"What have we learned about claiming service credits from GitHub?\" -> 0 references",
+   "ms": 8995,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "375c85dbdff9",
-   "at": "2026-11-17T00:49:18.705590Z",
+   "id": "5d6f12702c7c",
+   "at": "2026-11-17T01:44:34.572223Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "Twilio SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 429,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "twilio",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "e697778d9977",
-   "at": "2026-11-17T00:49:18.705535Z",
+   "id": "8af569f3f4fb",
+   "at": "2026-11-17T01:44:34.142162Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "GitHub SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 400,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "github",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "519c73a7aca2",
-   "at": "2026-11-17T00:49:18.705385Z",
+   "id": "4107bb4a2b3b",
+   "at": "2026-11-17T01:44:33.741258Z",
    "op": "remember",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
    "summary": "Cloudflare SLA -> clawback_promises",
-   "ms": 0,
+   "ms": 934,
    "ok": true,
    "detail": {
     "agent": "auditor",
     "tags": [
      "cloudflare",
      "promise"
-    ]
+    ],
+    "dataIds": []
    }
   },
   {
-   "id": "d74489381bac",
-   "at": "2026-11-17T00:49:18.703799Z",
+   "id": "7490527c701f",
+   "at": "2026-11-17T01:44:32.802205Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
    "sessionId": null,
    "summary": "denied: inbox-assistant can't read clawback_playbook",
-   "ms": 0,
+   "ms": 481,
    "ok": false,
    "detail": {
-    "agent": "inbox-assistant"
+    "agent": "inbox-assistant",
+    "deniedBy": "cognee",
+    "status": 403,
+    "body": "{\"detail\":\"Request owner does not have necessary permission: [read] for all datasets requested. [PermissionDeniedError]\"}"
    }
   },
   {
-   "id": "87e94e61634c",
-   "at": "2026-11-17T00:49:18.703788Z",
+   "id": "e83791db9645",
+   "at": "2026-11-17T01:44:32.320130Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 3991,
    "ok": true,
    "detail": {
     "agent": "inbox-assistant"
    }
   },
   {
-   "id": "ed58346c24fa",
-   "at": "2026-11-17T00:49:18.703774Z",
+   "id": "3a854ca92fe4",
+   "at": "2026-11-17T01:44:28.328178Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 3252,
    "ok": true,
    "detail": {
     "agent": "inbox-assistant"
    }
   },
   {
-   "id": "d6fb9dea373f",
-   "at": "2026-11-17T00:49:18.703759Z",
+   "id": "4aeea3dc24db",
+   "at": "2026-11-17T01:44:25.075885Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 4461,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "28a88eab7640",
-   "at": "2026-11-17T00:49:18.703743Z",
+   "id": "f7b4414b7643",
+   "at": "2026-11-17T01:44:20.614560Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 5552,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "2715410c238e",
-   "at": "2026-11-17T00:49:18.703721Z",
+   "id": "11891fac3a50",
+   "at": "2026-11-17T01:44:15.061849Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 4678,
    "ok": true,
    "detail": {
     "agent": "claims-writer"
    }
   },
   {
-   "id": "9a5922c0730e",
-   "at": "2026-11-17T00:49:18.703691Z",
+   "id": "176dca4cc7b4",
+   "at": "2026-11-17T01:44:10.382820Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_playbook",
    "sessionId": null,
    "summary": "denied: auditor can't read clawback_playbook",
-   "ms": 0,
+   "ms": 445,
    "ok": false,
    "detail": {
-    "agent": "auditor"
+    "agent": "auditor",
+    "deniedBy": "cognee",
+    "status": 403,
+    "body": "{\"detail\":\"Request owner does not have necessary permission: [read] for all datasets requested. [PermissionDeniedError]\"}"
    }
   },
   {
-   "id": "d35fae34f307",
-   "at": "2026-11-17T00:49:18.703630Z",
+   "id": "f7b681a437a8",
+   "at": "2026-11-17T01:44:09.936876Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_claims",
    "sessionId": null,
    "summary": "denied: auditor can't read clawback_claims",
-   "ms": 0,
+   "ms": 449,
    "ok": false,
    "detail": {
-    "agent": "auditor"
+    "agent": "auditor",
+    "deniedBy": "cognee",
+    "status": 403,
+    "body": "{\"detail\":\"Request owner does not have necessary permission: [read] for all datasets requested. [PermissionDeniedError]\"}"
    }
   },
   {
-   "id": "e52c48ced49b",
-   "at": "2026-11-17T00:49:18.703550Z",
+   "id": "9071e610a53b",
+   "at": "2026-11-17T01:44:09.487447Z",
    "op": "recall",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "clawback_promises",
    "sessionId": null,
-   "summary": "\"What do we know?\" -> 0 memories",
-   "ms": 0,
+   "summary": "\"What do we know?\" -> 0 references",
+   "ms": 4517,
    "ok": true,
    "detail": {
     "agent": "auditor"
    }
   },
   {
-   "id": "7df22bf6c8a9",
-   "at": "2026-11-17T00:49:18.701469Z",
+   "id": "4341919659b9",
+   "at": "2026-11-17T01:44:04.966252Z",
    "op": "health",
-   "target": "offline",
+   "target": "cognee",
    "dataset": "",
    "sessionId": null,
-   "summary": "offline: 3 agents, permission table enforced locally",
-   "ms": 0,
+   "summary": "3 agents, 10 grants, skill claim-writer",
+   "ms": 8645,
    "ok": true,
    "detail": {
     "agent": "owner"

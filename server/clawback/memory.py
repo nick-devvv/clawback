@@ -22,6 +22,7 @@ event says "offline".
 
 from __future__ import annotations
 
+import os
 import re
 import time
 import uuid
@@ -30,7 +31,7 @@ from typing import Any
 
 import httpx
 
-from .config import Settings
+from .config import ROOT, Settings
 from .models import MemoryEvent, MemoryTarget, Source
 from .store import Store
 
@@ -52,6 +53,37 @@ ACL: dict[str, dict[str, set[str]]] = {
 
 class Denied(Exception):
     pass
+
+
+# Cognee shows an agent's key only once, at creation. With no Redis the store is a process dict, so a
+# server restart (or a --reload after git pull) would lose the keys. Keep a git-ignored copy on disk.
+_KEY_FILE = ROOT / ".clawback-local" / "agent_keys.json"
+
+
+async def load_agent_keys(store: Store) -> dict:
+    keys = await store.get(AGENT_KEYS)
+    if not keys and os.environ.get("CLAWBACK_AGENT_KEYS"):
+        # Deployed copies reuse the agents made locally (Cognee shows a key once and caps agents per tenant):
+        # paste .clawback-local/agent_keys.json into this env var instead of running setup again.
+        import json
+
+        keys = json.loads(os.environ["CLAWBACK_AGENT_KEYS"])
+        await store.set(AGENT_KEYS, keys)
+    if not keys and store.kind == "memory" and _KEY_FILE.exists():
+        import json
+
+        keys = json.loads(_KEY_FILE.read_text())
+        await store.set(AGENT_KEYS, keys)
+    return keys or {}
+
+
+async def save_agent_keys(store: Store, keys: dict) -> None:
+    await store.set(AGENT_KEYS, keys)
+    if store.kind == "memory":
+        import json
+
+        _KEY_FILE.parent.mkdir(exist_ok=True)
+        _KEY_FILE.write_text(json.dumps(keys, indent=2))
 
 
 def _now() -> datetime:
@@ -78,7 +110,7 @@ class Memory:
     async def _key(self, agent: str) -> str:
         """Each agent calls Cognee with its own key (created by agents.setup); the owner key otherwise."""
         if agent != OWNER:
-            keys = await self.store.get(AGENT_KEYS) or {}
+            keys = await load_agent_keys(self.store)
             if keys.get(agent, {}).get("key"):
                 return keys[agent]["key"]
         return self.s.cognee_api_key
@@ -107,7 +139,7 @@ class Memory:
         return [MemoryEvent.model_validate(e) for e in await self.store.list(LOG_KEY, limit)]
 
     async def post(self, path: str, *, agent: str = OWNER, json: Any = None, data: Any = None, files: Any = None, params: dict | None = None, timeout: float = 120.0) -> Any:
-        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent)) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent), follow_redirects=True) as client:
             resp = await client.post(f"{self.s.cognee_url}{path}", json=json, data=data, files=files, params=params)
             if resp.status_code == 403:
                 raise Denied(resp.text[:200])
@@ -116,7 +148,7 @@ class Memory:
             return resp.json()
 
     async def get(self, path: str, *, agent: str = OWNER, params: dict | None = None, timeout: float = 30.0) -> Any:
-        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent)) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent), follow_redirects=True) as client:
             resp = await client.get(f"{self.s.cognee_url}{path}", params=params)
             if resp.status_code == 403:
                 raise Denied(resp.text[:200])
@@ -147,6 +179,14 @@ class Memory:
                 self._ids[row["name"]] = str(row["id"])
         return self._ids.get(name)
 
+    async def dataset_ids(self, shorts: list[str]) -> list[str] | None:
+        """Agents must address shared datasets by id: Cognee resolves names only among datasets the caller owns."""
+        try:
+            ids = [await self.dataset_id(d) for d in shorts]
+        except Exception:
+            return None
+        return ids if all(ids) else None
+
     # ---------- remember ----------
 
     async def remember(self, text: str, *, title: str, tags: list[str], dataset: str, agent: str, session_id: str | None = None, background: bool = False) -> tuple[list[str], MemoryEvent]:
@@ -164,12 +204,16 @@ class Memory:
             items.append({"id": item_id, "title": title, "text": text, "tags": tags, "dataset": dataset, "session_id": session_id, "at": _now().isoformat()})
             await self.store.set(OFFLINE_KEY, items)
             return [item_id], await self._log("remember", f"{title} -> {tier}", t0, True, agent=agent, dataset=name, session_id=session_id, detail={"tags": tags})
-        form: list[tuple[str, str]] = [("datasetName", name)]
-        form += [("node_set", t) for t in tags]
+        ds_ids = await self.dataset_ids([dataset])
+        # httpx wants form fields as a dict (a list of pairs is sent as a raw body and breaks AsyncClient).
+        # A list value sends the field once per item, which is how node_set takes several tags.
+        form: dict[str, Any] = {"datasetId": ds_ids[0]} if ds_ids else {"datasetName": name}
+        if tags:
+            form["node_set"] = list(tags)
         if session_id:
-            form.append(("session_id", session_id))
+            form["session_id"] = session_id
         if background:
-            form.append(("run_in_background", "true"))
+            form["run_in_background"] = "true"
         safe = re.sub(r"[^a-zA-Z0-9_-]+", "_", title)[:60] or "note"
         files = {"data": (f"{safe}.txt", text.encode("utf-8"), "text/plain")}
         try:
@@ -192,6 +236,9 @@ class Memory:
                 out["items"] = [{"kind": "skill_improvement_proposal", "proposal_id": f"prop_{uuid.uuid4().hex[:8]}"}]
             return out, await self._log("entry", label, t0, True, agent=agent, dataset=name, session_id=session_id)
         payload: dict[str, Any] = {"entry": entry, "dataset_name": name, "session_id": session_id}
+        ds_ids = await self.dataset_ids([dataset])
+        if ds_ids:
+            payload["dataset_id"] = ds_ids[0]  # takes precedence over dataset_name; needed for shared datasets
         if skill_improvement:
             payload["skill_improvement"] = skill_improvement
         try:
@@ -199,6 +246,19 @@ class Memory:
             return result, await self._log("entry", label, t0, True, agent=agent, dataset=name, session_id=session_id)
         except Exception as err:
             return {}, await self._log("entry", f"{label} failed: {err}", t0, False, agent=agent, dataset=name, session_id=session_id)
+
+    async def ingest_skill(self, skills_text: str, *, skill_name: str, dataset: str, agent: str = OWNER, label: str = "") -> tuple[dict, MemoryEvent]:
+        """POST /api/v1/skills/: (re)write a SKILL.md into a dataset. Used to apply an approved rewrite."""
+        t0 = time.perf_counter()
+        name = self.ds(dataset)
+        label = label or f"skill {skill_name} -> {name}"
+        if self.target == "offline":
+            return {"offline": True}, await self._log("remember", label, t0, True, agent=agent, dataset=name)
+        try:
+            result = await self.post("/api/v1/skills/", agent=agent, json={"skills_text": skills_text, "skill_name": skill_name, "dataset_name": name})
+            return result if isinstance(result, dict) else {"result": result}, await self._log("remember", label, t0, True, agent=agent, dataset=name)
+        except Exception as err:
+            return {}, await self._log("remember", f"{label} failed: {err}", t0, False, agent=agent, dataset=name)
 
     # ---------- recall ----------
 
@@ -208,22 +268,28 @@ class Memory:
         if self.target == "offline":
             allowed = [d for d in datasets if "read" in ACL.get(agent, {}).get(d, set())]
             if not allowed:
-                return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
+                return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id, detail={"deniedBy": "offline"})
             items = [it for it in await self.store.get(OFFLINE_KEY) or [] if it["dataset"] in allowed and (it["session_id"] in (None, session_id))]
             q = _words(query)
             hits = sorted((it for it in items if q & _words(it["title"] + " " + it["text"])), key=lambda it: len(q & _words(it["title"] + " " + it["text"])), reverse=True)[:top_k]
             answer = "\n".join(f"- {h['title']}: {h['text'][:220]}" for h in hits) or "Nothing in memory about that yet."
             refs = [Source(title=h["title"], kind="human", quote=h["text"][:90]) for h in hits]
             return answer, refs, await self._log("recall", f"\"{query[:64]}\" -> {len(hits)} memories", t0, True, agent=agent, dataset=",".join(names), session_id=session_id)
-        payload: dict[str, Any] = {"query": query, "datasets": names, "top_k": top_k, "include_references": True}
+        payload: dict[str, Any] = {"query": query, "top_k": top_k, "include_references": True}
+        ds_ids = await self.dataset_ids(datasets)
+        if ds_ids:
+            payload["dataset_ids"] = ds_ids
+        else:
+            payload["datasets"] = names
         if session_id:
             payload["session_id"] = session_id
         try:
             rows = await self.post("/api/v1/recall", agent=agent, json=payload, timeout=90.0)
             answer, refs = _read_recall(rows)
             return answer, refs, await self._log("recall", f"\"{query[:64]}\" -> {len(refs)} references", t0, True, agent=agent, dataset=",".join(names), session_id=session_id)
-        except Denied:
-            return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
+        except Denied as err:
+            # Only a real HTTP 403 from Cognee lands here; timeouts, 401s and 5xx go to the branch below.
+            return "", [], await self._log("recall", f"denied: {agent} can't read {', '.join(names)}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id, detail={"deniedBy": "cognee", "status": 403, "body": str(err)[:200]})
         except Exception as err:
             return "", [], await self._log("recall", f"recall failed: {err}", t0, False, agent=agent, dataset=",".join(names), session_id=session_id)
 
@@ -237,6 +303,9 @@ class Memory:
         if self.target == "offline":
             return {"offline": True}, await self._log("improve", what, t0, True, agent=agent, dataset=name)
         payload: dict[str, Any] = {"dataset_name": name, "review_conflicts": review_conflicts}
+        ds_ids = await self.dataset_ids([dataset])
+        if ds_ids:
+            payload["dataset_id"] = ds_ids[0]  # agents improve the owner's shared datasets, which needs the UUID
         if session_ids:
             payload["session_ids"] = session_ids
         try:
@@ -282,9 +351,11 @@ class Memory:
             await self.store.set(OFFLINE_KEY, keep)
             return await self._log("forget", f"{len(items) - len(keep)} item(s): {why}", t0, True, agent=agent, dataset=name)
         removed, errors = 0, []
+        ds_ids = await self.dataset_ids([dataset])
+        target = ds_ids[0] if ds_ids else name  # `dataset` accepts an id or a name; id works for shared datasets
         for data_id in data_ids:
             try:
-                await self.post("/api/v1/forget", agent=agent, json={"dataId": data_id, "dataset": name})
+                await self.post("/api/v1/forget", agent=agent, json={"dataId": data_id, "dataset": target})
                 removed += 1
             except Exception as err:
                 errors.append(str(err))

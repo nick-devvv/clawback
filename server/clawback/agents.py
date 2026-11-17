@@ -17,9 +17,10 @@ Run it once (POST /api/py/agents/setup). Agent keys stay server-side in the stor
 from __future__ import annotations
 
 import time
+import uuid
 
 from .config import DATA
-from .memory import ACL, AGENT_KEYS, AUDITOR, CLAIMS, INBOX, OWNER, PLAYBOOK, PROMISES, WRITER, Denied, Memory
+from .memory import ACL, AUDITOR, CLAIMS, INBOX, OWNER, PLAYBOOK, PROMISES, WRITER, Denied, Memory, load_agent_keys, save_agent_keys
 
 AGENTS = {
     AUDITOR: "Reads vendor status pages and SLAs; records promises and evidence.",
@@ -42,17 +43,22 @@ async def setup(memory: Memory) -> dict:
         row = await memory.post("/api/v1/datasets", json={"name": memory.ds(short)})
         report["datasets"][short] = str(row.get("id"))
         memory._ids[memory.ds(short)] = str(row.get("id"))
-    keys = await memory.store.get(AGENT_KEYS) or {}
+    keys = await load_agent_keys(memory.store)
     for name in AGENTS:
         if name not in keys:
-            try:
-                created = await memory.post("/api/v1/agents/create", params={"name": f"clawback-{name}"})
-                keys[name] = {"id": created.get("agentId") or created.get("agent_id"), "key": created.get("agentApiKey") or created.get("agent_api_key")}
-            except RuntimeError as err:  # 409: exists from an earlier run, key not shown again
-                report["agents"][name] = {"error": str(err)[:160]}
+            # 409 = an agent with that name exists from an earlier run and its key isn't shown again:
+            # create a fresh one under a suffixed name instead of failing.
+            for agent_name in (f"clawback-{name}", f"clawback-{name}-{uuid.uuid4().hex[:6]}"):
+                try:
+                    created = await memory.post("/api/v1/agents/create", params={"name": agent_name})
+                    keys[name] = {"id": created.get("agentId") or created.get("agent_id"), "key": created.get("agentApiKey") or created.get("agent_api_key"), "name": agent_name}
+                    break
+                except RuntimeError as err:
+                    report["agents"][name] = {"error": str(err)[:160]}
+            if name not in keys:
                 continue
         report["agents"][name] = {"id": keys[name]["id"]}
-    await memory.store.set(AGENT_KEYS, keys)
+    await save_agent_keys(memory.store, keys)
     for name, perms in ACL.items():
         if name == OWNER or name not in keys:
             continue
@@ -68,12 +74,25 @@ async def setup(memory: Memory) -> dict:
 
 
 async def permission_check(memory: Memory) -> list[dict]:
-    """The permissions moment in the demo: each agent tries to read each dataset; Cognee answers."""
+    """The permissions moment in the demo: each agent tries to read each dataset; Cognee answers.
+
+    `allowed` is true only when the read succeeded. `deniedBy` says who refused: "cognee" (a real 403),
+    "offline" (the local ACL stand-in) or null. allowed:false with deniedBy:null is NOT a permission
+    refusal; it's an error (timeout, 401, 5xx, missing agent key) and the summary says which.
+    """
+    keys = await load_agent_keys(memory.store) if memory.target == "cognee" else {}
     rows = []
     for agent in (AUDITOR, WRITER, INBOX):
         for short in (PROMISES, CLAIMS, PLAYBOOK):
+            if memory.target == "cognee" and not keys.get(agent, {}).get("key"):
+                # Without its own key the agent would call Cognee as the owner and read everything,
+                # which would fake the "allowed" cells. Report it instead of calling.
+                rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": False, "deniedBy": None,
+                             "summary": f"no Cognee key for {agent}: run /agents/setup (on 409, delete or rename the agent)"})
+                continue
             _, _, ev = await memory.recall("What do we know?", datasets=[short], agent=agent, top_k=1)
-            rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": ev.ok, "summary": ev.summary})
+            rows.append({"agent": agent, "dataset": memory.ds(short), "allowed": ev.ok,
+                         "deniedBy": ev.detail.get("deniedBy"), "summary": ev.summary})
     return rows
 
 
