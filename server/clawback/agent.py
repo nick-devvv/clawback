@@ -209,7 +209,8 @@ class Agent:
             f"What have we learned about claiming service credits from {audit.vendor_name}? How do they dispute claims?",
             datasets=[PLAYBOOK, PROMISES],
             agent=WRITER,
-            session_id=session_id,
+            # No session_id: a Cognee session binds to one dataset, and this claim's session belongs to clawback_claims.
+            # Recalling with it against playbook/promises binds it there and the claim's own writes then get a 409.
         )
         lessons = await self.lessons(audit.vendor_id)
         email = await self.llm.draft_claim(audit, lessons)
