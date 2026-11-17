@@ -30,7 +30,7 @@ from typing import Any
 
 import httpx
 
-from .config import Settings
+from .config import ROOT, Settings
 from .models import MemoryEvent, MemoryTarget, Source
 from .store import Store
 
@@ -52,6 +52,30 @@ ACL: dict[str, dict[str, set[str]]] = {
 
 class Denied(Exception):
     pass
+
+
+# Cognee shows an agent's key only once, at creation. With no Redis the store is a process dict, so a
+# server restart (or a --reload after git pull) would lose the keys. Keep a git-ignored copy on disk.
+_KEY_FILE = ROOT / ".clawback-local" / "agent_keys.json"
+
+
+async def load_agent_keys(store: Store) -> dict:
+    keys = await store.get(AGENT_KEYS)
+    if not keys and store.kind == "memory" and _KEY_FILE.exists():
+        import json
+
+        keys = json.loads(_KEY_FILE.read_text())
+        await store.set(AGENT_KEYS, keys)
+    return keys or {}
+
+
+async def save_agent_keys(store: Store, keys: dict) -> None:
+    await store.set(AGENT_KEYS, keys)
+    if store.kind == "memory":
+        import json
+
+        _KEY_FILE.parent.mkdir(exist_ok=True)
+        _KEY_FILE.write_text(json.dumps(keys, indent=2))
 
 
 def _now() -> datetime:
@@ -78,7 +102,7 @@ class Memory:
     async def _key(self, agent: str) -> str:
         """Each agent calls Cognee with its own key (created by agents.setup); the owner key otherwise."""
         if agent != OWNER:
-            keys = await self.store.get(AGENT_KEYS) or {}
+            keys = await load_agent_keys(self.store)
             if keys.get(agent, {}).get("key"):
                 return keys[agent]["key"]
         return self.s.cognee_api_key
@@ -147,6 +171,14 @@ class Memory:
                 self._ids[row["name"]] = str(row["id"])
         return self._ids.get(name)
 
+    async def dataset_ids(self, shorts: list[str]) -> list[str] | None:
+        """Agents must address shared datasets by id: Cognee resolves names only among datasets the caller owns."""
+        try:
+            ids = [await self.dataset_id(d) for d in shorts]
+        except Exception:
+            return None
+        return ids if all(ids) else None
+
     # ---------- remember ----------
 
     async def remember(self, text: str, *, title: str, tags: list[str], dataset: str, agent: str, session_id: str | None = None, background: bool = False) -> tuple[list[str], MemoryEvent]:
@@ -164,7 +196,8 @@ class Memory:
             items.append({"id": item_id, "title": title, "text": text, "tags": tags, "dataset": dataset, "session_id": session_id, "at": _now().isoformat()})
             await self.store.set(OFFLINE_KEY, items)
             return [item_id], await self._log("remember", f"{title} -> {tier}", t0, True, agent=agent, dataset=name, session_id=session_id, detail={"tags": tags})
-        form: list[tuple[str, str]] = [("datasetName", name)]
+        ds_ids = await self.dataset_ids([dataset])
+        form: list[tuple[str, str]] = [("datasetId", ds_ids[0])] if ds_ids else [("datasetName", name)]
         form += [("node_set", t) for t in tags]
         if session_id:
             form.append(("session_id", session_id))
@@ -215,7 +248,12 @@ class Memory:
             answer = "\n".join(f"- {h['title']}: {h['text'][:220]}" for h in hits) or "Nothing in memory about that yet."
             refs = [Source(title=h["title"], kind="human", quote=h["text"][:90]) for h in hits]
             return answer, refs, await self._log("recall", f"\"{query[:64]}\" -> {len(hits)} memories", t0, True, agent=agent, dataset=",".join(names), session_id=session_id)
-        payload: dict[str, Any] = {"query": query, "datasets": names, "top_k": top_k, "include_references": True}
+        payload: dict[str, Any] = {"query": query, "top_k": top_k, "include_references": True}
+        ds_ids = await self.dataset_ids(datasets)
+        if ds_ids:
+            payload["dataset_ids"] = ds_ids
+        else:
+            payload["datasets"] = names
         if session_id:
             payload["session_id"] = session_id
         try:
