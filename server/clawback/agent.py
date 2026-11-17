@@ -374,9 +374,14 @@ class Agent:
     async def handoff(self) -> Briefing:
         """A new agent with no state of its own: everything it says comes back from memory."""
         agent_id = _id("agent")
-        a1, refs1, ev1 = await self.memory.recall("Summarize every vendor claim and settlement in memory: vendor, amount in USD, period, and whether it is open or settled. List only what memory contains; do not mention what is missing.", datasets=[CLAIMS, PROMISES], agent=WRITER)
-        a2, refs2, ev2 = await self.memory.recall("List the lessons we have learned about how each vendor disputes credit claims, one per line.", datasets=[PLAYBOOK], agent=WRITER)
-        open_claims = [r.title for r in refs1 if "claim" in r.title.lower()] or [line.strip("- ") for line in a1.splitlines() if "claim" in line.lower()][:5]
+        a1, refs1, ev1 = await self.memory.recall(
+            "List every claim and settlement: vendor, amount in USD, period, and whether it is open or settled.",
+            datasets=[CLAIMS], agent=WRITER)
+        a2, refs2, ev2 = await self.memory.recall(
+            "List the lessons we have learned about how each vendor disputes credit claims, one per line.",
+            datasets=[PLAYBOOK], agent=WRITER)
+        a1, a2 = _answer_only(a1), _answer_only(a2)
+        open_claims = [r.title for r in refs1 if "claim" in r.title.lower() or "settled" in r.title.lower()] or [line.strip("- ") for line in a1.splitlines() if line.strip()][:5]
         lessons = [line.strip("- ") for line in a2.splitlines() if line.strip()][:5]
         return Briefing(
             agent_id=agent_id,
@@ -456,3 +461,11 @@ def _from_cognee(rows: list[dict], vendor_name: str) -> Conflict | None:
             facts.append(ConflictFact(id=str(f.get("id") or f.get("fact_id") or uuid.uuid4()), text=str(text)[:240], source=Source(title=title or "Cognee memory", kind="human")))
         return Conflict(id=str(row.get("id") or row.get("conflict_id")), question=str(row.get("question") or row.get("subject") or f"What is true about {vendor_name}?"), facts=facts, from_cognee=True)
     return None
+
+
+def _answer_only(text: str) -> str:
+    """Cognee appends an 'Evidence:' list of raw chunks to its answers; the briefing shows the answer only."""
+    for marker in ("\nEvidence:", "\n**Evidence", "\nSources:"):
+        if marker in text:
+            text = text.split(marker, 1)[0]
+    return text.strip()
