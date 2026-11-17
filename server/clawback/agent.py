@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from . import sla
-from .config import Settings, get_settings
+from .config import DATA, Settings, get_settings
 from .llm import LLM
 from . import agents as team
 from .memory import AUDITOR, CLAIMS, INBOX, PLAYBOOK, PROMISES, WRITER, Memory, find_proposal
@@ -402,16 +402,33 @@ class Agent:
         return await team.proposal(self.memory, pid)
 
     async def apply_proposal(self, claim_id: str) -> dict:
-        """The human approved Cognee's rewrite of the claim-writer skill: record the run again with apply=True."""
+        """The human approved Cognee's rewrite of the claim-writer skill.
+
+        1) Ask Cognee to apply it: a skill_run with apply=True naming the proposal_id.
+        2) This Cognee server has no apply endpoint and may reject (1). Then write Cognee's proposed procedure back as
+           the claim-writer skill (POST /api/v1/skills/), so the rewrite still lands in Cognee and the next claim uses it.
+        """
         claim = await self.get_claim(claim_id)
+        pid = await self.store.get(f"proposal:{claim.id}")
+        if not pid:
+            raise NotFound("no skill proposal for this claim yet")
         result, ev = await self.memory.entry(
             {"type": "skill_run", "selected_skill_id": team.SKILL_NAME, "task_text": f"Claim a service credit from {claim.audit.vendor_name}",
              "result_summary": "Human approved the proposed rewrite.", "success_score": 0.4, "feedback": -1.0},
-            dataset=PLAYBOOK, agent=WRITER, session_id=None,  # the claim's session lives in clawback_claims; a session bound
-            # to another dataset makes Cognee reject the entry (400 Invalid remember request). skill_run doesn't need one.
-            skill_improvement={"skill_name": team.SKILL_NAME, "apply": True, "score_threshold": 0.9}, label="skill rewrite applied",
+            dataset=PLAYBOOK, agent=WRITER, session_id=None,  # a session bound to clawback_claims would make Cognee reject this entry
+            skill_improvement={"skill_name": team.SKILL_NAME, "apply": True, "score_threshold": 0.9, "proposal_id": pid}, label="skill rewrite applied",
         )
-        return {"ok": ev.ok, "result": result}
+        if ev.ok:
+            return {"ok": True, "result": {**(result or {}), "via": "cognee_apply", "proposalId": pid}}
+        proposal = await team.proposal(self.memory, pid)
+        procedure = proposal.get("proposed_procedure") if isinstance(proposal, dict) else None
+        if not procedure:
+            return {"ok": False, "result": {"via": "none", "proposalId": pid, "error": "proposal has no proposed_procedure"}}
+        skill_md = (DATA / "skills" / team.SKILL_NAME / "SKILL.md").read_text()
+        front = skill_md.split("---", 2)
+        skills_text = f"---{front[1]}---\n\n{procedure.strip()}\n" if len(front) == 3 else procedure
+        out, ev2 = await self.memory.ingest_skill(skills_text, skill_name=team.SKILL_NAME, dataset=PLAYBOOK, label=f"applied Cognee's rewrite of {team.SKILL_NAME}")
+        return {"ok": ev2.ok, "result": {**(out or {}), "via": "reingest", "proposalId": pid}}
 
     async def reset(self, memory_too: bool = False) -> dict:
         await self.store.reset()

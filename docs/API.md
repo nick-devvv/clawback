@@ -23,7 +23,7 @@ Live docs while the API runs: `http://localhost:3000/api/py/docs`. Types: `lib/t
 | POST | `/agents/setup` | | `TeamReport {target, datasets, agents, grants, skill}` (run once) | datasets, agents/create, permissions, skills |
 | GET | `/agents/permissions` | | `PermissionRow[] {agent, dataset, allowed, deniedBy, summary}`: 3 agents × 3 datasets | `recall` per agent (403 = denied; `deniedBy: "cognee"` only on a real 403) |
 | GET | `/claims/{id}/proposal` | | Cognee's before/after rewrite of the claim-writer skill | `GET /api/v1/proposals/{id}` |
-| POST | `/claims/{id}/proposal/apply` | | `{ok}` | skill_run entry with `apply: true` |
+| POST | `/claims/{id}/proposal/apply` | | `{ok, result: {via, proposalId}}` | skill_run entry with `apply: true` + `proposal_id`; if Cognee rejects it, re-ingest the proposed procedure via `POST /api/v1/skills/` (`via: "reingest"`) |
 | GET | `/inbox?vendor_id=github` | | `[{title, text, date, from}]` (Slashy when wired, samples otherwise) | — |
 | POST | `/reset?memory=false` | | `{ok}` (wipes app state; `memory=true` also forgets the Cognee dataset) | `forget` |
 

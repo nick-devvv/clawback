@@ -239,6 +239,19 @@ class Memory:
         except Exception as err:
             return {}, await self._log("entry", f"{label} failed: {err}", t0, False, agent=agent, dataset=name, session_id=session_id)
 
+    async def ingest_skill(self, skills_text: str, *, skill_name: str, dataset: str, agent: str = OWNER, label: str = "") -> tuple[dict, MemoryEvent]:
+        """POST /api/v1/skills/: (re)write a SKILL.md into a dataset. Used to apply an approved rewrite."""
+        t0 = time.perf_counter()
+        name = self.ds(dataset)
+        label = label or f"skill {skill_name} -> {name}"
+        if self.target == "offline":
+            return {"offline": True}, await self._log("remember", label, t0, True, agent=agent, dataset=name)
+        try:
+            result = await self.post("/api/v1/skills/", agent=agent, json={"skills_text": skills_text, "skill_name": skill_name, "dataset_name": name})
+            return result if isinstance(result, dict) else {"result": result}, await self._log("remember", label, t0, True, agent=agent, dataset=name)
+        except Exception as err:
+            return {}, await self._log("remember", f"{label} failed: {err}", t0, False, agent=agent, dataset=name)
+
     # ---------- recall ----------
 
     async def recall(self, query: str, *, datasets: list[str], agent: str, session_id: str | None = None, top_k: int = 8) -> tuple[str, list[Source], MemoryEvent]:
