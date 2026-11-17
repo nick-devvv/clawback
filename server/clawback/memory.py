@@ -225,6 +225,9 @@ class Memory:
                 out["items"] = [{"kind": "skill_improvement_proposal", "proposal_id": f"prop_{uuid.uuid4().hex[:8]}"}]
             return out, await self._log("entry", label, t0, True, agent=agent, dataset=name, session_id=session_id)
         payload: dict[str, Any] = {"entry": entry, "dataset_name": name, "session_id": session_id}
+        ds_ids = await self.dataset_ids([dataset])
+        if ds_ids:
+            payload["dataset_id"] = ds_ids[0]  # takes precedence over dataset_name; needed for shared datasets
         if skill_improvement:
             payload["skill_improvement"] = skill_improvement
         try:
@@ -321,9 +324,11 @@ class Memory:
             await self.store.set(OFFLINE_KEY, keep)
             return await self._log("forget", f"{len(items) - len(keep)} item(s): {why}", t0, True, agent=agent, dataset=name)
         removed, errors = 0, []
+        ds_ids = await self.dataset_ids([dataset])
+        target = ds_ids[0] if ds_ids else name  # `dataset` accepts an id or a name; id works for shared datasets
         for data_id in data_ids:
             try:
-                await self.post("/api/v1/forget", agent=agent, json={"dataId": data_id, "dataset": name})
+                await self.post("/api/v1/forget", agent=agent, json={"dataId": data_id, "dataset": target})
                 removed += 1
             except Exception as err:
                 errors.append(str(err))
