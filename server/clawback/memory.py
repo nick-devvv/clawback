@@ -107,7 +107,7 @@ class Memory:
         return [MemoryEvent.model_validate(e) for e in await self.store.list(LOG_KEY, limit)]
 
     async def post(self, path: str, *, agent: str = OWNER, json: Any = None, data: Any = None, files: Any = None, params: dict | None = None, timeout: float = 120.0) -> Any:
-        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent)) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent), follow_redirects=True) as client:
             resp = await client.post(f"{self.s.cognee_url}{path}", json=json, data=data, files=files, params=params)
             if resp.status_code == 403:
                 raise Denied(resp.text[:200])
@@ -116,7 +116,7 @@ class Memory:
             return resp.json()
 
     async def get(self, path: str, *, agent: str = OWNER, params: dict | None = None, timeout: float = 30.0) -> Any:
-        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent)) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=await self._headers(agent), follow_redirects=True) as client:
             resp = await client.get(f"{self.s.cognee_url}{path}", params=params)
             if resp.status_code == 403:
                 raise Denied(resp.text[:200])
